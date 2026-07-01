@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>VetCare — софтуер за ветеринарна клиника без месечни такси</title>
+  <meta name="description" content="VetCare е модерен софтуер за ветеринарна клиника без месечни такси — картони, записвания и автоматични напомняния на едно място, достъпно от всяко устройство. Безплатно мигрираме данните ви от стария софтуер.">
+  <meta name="keywords" content="софтуер за ветеринарна клиника, ветеринарен софтуер, програма за ветеринарна клиника, софтуер за ветеринарна клиника без такси">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://vetcare.bg/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://vetcare.bg/">
+  <meta property="og:title" content="VetCare — софтуер за ветеринарна клиника без месечни такси">
+  <meta property="og:description" content="Картони, записвания и автоматични напомняния на едно място. Основните функции са безплатни завинаги.">
+  <meta property="og:locale" content="bg_BG">
+  <meta property="og:site_name" content="VetCare">
+  <meta property="og:image" content="https://vetcare.bg/assets/images/rex-kolaj.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Рекс — кучето, заради което създадохме VetCare">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="VetCare — софтуер за ветеринарна клиника без месечни такси">
+  <meta name="twitter:description" content="Картони, записвания и напомняния — безплатно завинаги.">
+  <meta name="twitter:image" content="https://vetcare.bg/assets/images/rex-kolaj.webp">
+
+  <meta name="theme-color" content="#207885">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css"></noscript>
+  <link rel="stylesheet" href="assets/css/styles.min.css">
+
+  <style>[x-cloak]{display:none!important}</style>
+  <script defer src="assets/js/main.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@graph":[
+    {"@type":"SoftwareApplication","name":"VetCare","applicationCategory":"BusinessApplication","operatingSystem":"Web, iOS, Android","description":"Модерен софтуер за ветеринарна клиника — картони, записвания и автоматични напомняния на едно място. Основните функции са безплатни.","offers":{"@type":"Offer","price":"0","priceCurrency":"BGN"},"inLanguage":"bg"},
+    {"@type":"Organization","name":"VetCare","description":"Софтуер за ветеринарни клиники.","email":"hello@vetcare.bg","url":"https://vetcare.bg"},
+    {"@type":"FAQPage","mainEntity":[
+      {"@type":"Question","name":"Наистина ли е безплатно?","acceptedAnswer":{"@type":"Answer","text":"Да. Всички основни функции за работата на клиниката са безплатни, без срок и без кредитна карта. В бъдеще ще предложим платен план само с усъвършенствани функции."}},
+      {"@type":"Question","name":"Трябва ли да инсталирам нещо?","acceptedAnswer":{"@type":"Answer","text":"Не. VetCare работи изцяло в браузъра, на всяко устройство."}},
+      {"@type":"Question","name":"Какво става с данните ми от стария софтуер?","acceptedAnswer":{"@type":"Answer","text":"Мигрираме ги безплатно. Свързвате се с нас и ние се грижим да прехвърлим картоните, клиентите и историята."}},
+      {"@type":"Question","name":"Чии са данните ми?","acceptedAnswer":{"@type":"Answer","text":"Изцяло ваши. Можете да ги експортирате и изтеглите по всяко време."}},
+      {"@type":"Question","name":"Какви напомняния изпраща системата?","acceptedAnswer":{"@type":"Answer","text":"Автоматични напомняния за ваксини, обезпаразитяване и профилактични прегледи — до вас и до клиентите ви."}},
+      {"@type":"Question","name":"Подходящ ли е за малка клиника?","acceptedAnswer":{"@type":"Answer","text":"Точно за това е създаден — за клиники без IT отдел и без бюджет за скъп софтуер."}}
+    ]}
+  ]}
+  </script>
+</head>
+<body x-data="vetcare">
+
+<a class="vc-skip-link" href="#main-content">Прескочи към съдържанието</a>
+
+<!-- HEADER -->
+<header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }">
+  <div class="vc-header-inner">
+    <a href="#top" @click="menuOpen = false" class="vc-logo">
+      <img src="assets/images/rex-icon.svg" alt="VetCare лого — дигиталният Рекс" width="34" height="38">
+      <span class="vc-logo-text">
+        <span class="vc-logo-name">VetCare</span>
+        <span class="vc-logo-sub">VETERINARY SOFTWARE</span>
+      </span>
+    </a>
+
+    <nav class="vc-nav-desktop" aria-label="Главна навигация">
+      <a href="#kak-raboti" class="vc-nav-link">Как работи</a>
+      <a href="#polzi" class="vc-nav-link">Ползи</a>
+      <a href="#ceni" class="vc-nav-link">Цени</a>
+      <a href="#istoriya" class="vc-nav-link">История</a>
+      <a href="#kontakti" class="vc-nav-link">Контакти</a>
+      <a href="#demo" class="vc-cta-btn">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+    </nav>
+
+    <button @click="menuOpen = !menuOpen" aria-label="Меню" :aria-expanded="menuOpen.toString()" class="vc-hamburger">
+      <i :class="menuOpen ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <nav x-show="menuOpen" class="vc-mobile-menu" aria-label="Мобилна навигация" style="display:none">
+    <a href="#kak-raboti" @click="menuOpen = false" class="vc-mobile-menu-link">Как работи</a>
+    <a href="#polzi" @click="menuOpen = false" class="vc-mobile-menu-link">Ползи</a>
+    <a href="#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
+    <a href="#istoriya" @click="menuOpen = false" class="vc-mobile-menu-link">История</a>
+    <a href="#kontakti" @click="menuOpen = false" class="vc-mobile-menu-link">Контакти</a>
+    <a href="#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+  </nav>
+</header>
+
+<main id="main-content">
+
+  <!-- HERO -->
+  <section id="top" class="vc-hero-section">
+    <div class="vc-container">
+      <div class="vc-hero-grid">
+        <div>
+          <span class="vc-badge vc-badge--accent"><i class="ti ti-paw" aria-hidden="true"></i>Софтуер за ветеринарна клиника</span>
+          <h1 class="vc-hero-h1">Модерен софтуер за вашата ветеринарна клиника. <span class="vc-accent-text">Без такси.</span></h1>
+          <p class="vc-hero-desc">Всичко необходимо за работата на клиниката — картони, записвания, напомняния — на едно място, достъпно от всяко устройство. Безплатно мигрираме данните ви от стария софтуер.</p>
+          <div class="vc-hero-ctas">
+            <a href="#demo" class="vc-hero-primary-btn">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+            <a href="#kak-raboti" class="vc-hero-secondary-btn">Виж как работи</a>
+          </div>
+          <div class="vc-hero-checks">
+            <span class="vc-hero-check"><i class="ti ti-check" aria-hidden="true"></i>Без инсталация</span>
+            <span class="vc-hero-check"><i class="ti ti-check" aria-hidden="true"></i>Компютър, таблет и телефон</span>
+            <span class="vc-hero-check"><i class="ti ti-check" aria-hidden="true"></i>Данните остават ваши</span>
+          </div>
+        </div>
+
+        <div class="vc-mock-wrapper">
+          <img src="assets/images/rex-icon.svg" alt="Дигиталният Рекс пред екрана на VetCare" width="216" height="266" fetchpriority="high" class="vc-mock-rex">
+          <div aria-hidden="true" class="vc-mock-window">
+            <div class="vc-mock-titlebar">
+              <span class="vc-mock-dot vc-mock-dot--red" aria-hidden="true"></span>
+              <span class="vc-mock-dot vc-mock-dot--yellow" aria-hidden="true"></span>
+              <span class="vc-mock-dot vc-mock-dot--green" aria-hidden="true"></span>
+              <span class="vc-mock-url">app.vetcare.bg</span>
+            </div>
+            <div class="vc-mock-body">
+              <div class="vc-mock-sidebar" aria-hidden="true">
+                <div class="vc-mock-sidebar-header">
+                  <img src="assets/images/rex-icon.svg" alt="" width="20" height="22" class="vc-mock-sidebar-logo">
+                  <span class="vc-mock-sidebar-name">VetCare</span>
+                </div>
+                <span class="vc-mock-nav-item vc-mock-nav-item--active"><i class="ti ti-calendar"></i>Календар</span>
+                <span class="vc-mock-nav-item"><i class="ti ti-files"></i>Картони</span>
+                <span class="vc-mock-nav-item"><i class="ti ti-users"></i>Клиенти</span>
+                <span class="vc-mock-nav-item"><i class="ti ti-bell"></i>Напомняния</span>
+              </div>
+              <div class="vc-mock-content">
+                <div class="vc-mock-cal-header">
+                  <span class="vc-mock-cal-title">Днес · 19 юни</span>
+                  <span class="vc-mock-cal-count">12 прегледа</span>
+                </div>
+                <div class="vc-mock-appts">
+                  <div class="vc-mock-appt"><span class="vc-mock-appt-icon" aria-hidden="true">🐕</span><div class="vc-mock-appt-body"><div class="vc-mock-appt-name">Рекс · Лабрадор</div><div class="vc-mock-appt-sub">Годишен преглед · ваксина</div></div><span class="vc-mock-appt-time">09:30</span></div>
+                  <div class="vc-mock-appt"><span class="vc-mock-appt-icon" aria-hidden="true">🐈</span><div class="vc-mock-appt-body"><div class="vc-mock-appt-name">Мими · Котка</div><div class="vc-mock-appt-sub">Обезпаразитяване</div></div><span class="vc-mock-appt-time">11:00</span></div>
+                  <div class="vc-mock-appt vc-mock-appt--dashed"><span class="vc-mock-appt-icon vc-mock-appt-icon--muted" aria-hidden="true">🐇</span><div class="vc-mock-appt-body"><div class="vc-mock-appt-name">Зайо · Заек</div><div class="vc-mock-appt-sub">Контролен преглед</div></div><span class="vc-mock-appt-time vc-mock-appt-time--muted">15:30</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="vc-mock-notif">
+            <span class="vc-mock-notif-icon" aria-hidden="true"><i class="ti ti-bell"></i></span>
+            <div><div class="vc-mock-notif-title">Напомнянето е изпратено</div><div class="vc-mock-notif-sub">Ваксина на Рекс · до 7 дни</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="vc-problems-section">
+    <div class="vc-container">
+      <span class="vc-section-label">Проблемът</span>
+      <h2 class="vc-h2">Знаем как изглежда работата в малка клиника</h2>
+      <p class="vc-section-intro">Вие сте и ветеринар, и рецепция, и счетоводство. Нямате IT отдел, нито бюджет за скъп софтуер. А решенията на пазара често само добавят главоболия:</p>
+      <div class="vc-problems-grid">
+        <div class="vc-problem-card">
+          <span class="vc-card-icon"><i class="ti ti-device-desktop-off" aria-hidden="true"></i></span>
+          <h3 class="vc-card-h3">Остарели и тромави</h3>
+          <p class="vc-card-body">Програми отпреди десетилетия, които работят само на един компютър в кабинета.</p>
+        </div>
+        <div class="vc-problem-card">
+          <span class="vc-card-icon"><i class="ti ti-cash" aria-hidden="true"></i></span>
+          <h3 class="vc-card-h3">Скъпи за това, което предлагат</h3>
+          <p class="vc-card-body">Високи такси за основни функции, които всъщност би трябвало да са даденост.</p>
+        </div>
+        <div class="vc-problem-card">
+          <span class="vc-card-icon"><i class="ti ti-lock" aria-hidden="true"></i></span>
+          <h3 class="vc-card-h3">Заключват данните ви</h3>
+          <p class="vc-card-body">Веднъж вкарани, картоните остават в плен — смяната на софтуер изглежда невъзможна.</p>
+        </div>
+        <div class="vc-problem-card">
+          <span class="vc-card-icon"><i class="ti ti-mood-sad" aria-hidden="true"></i></span>
+          <h3 class="vc-card-h3">Оставят ви сами</h3>
+          <p class="vc-card-body">Без реална поддръжка, когато нещо не работи.</p>
+        </div>
+      </div>
+      <p class="vc-problems-closing">Решихме да направим <span class="vc-accent-text">обратното</span> на всичко това.</p>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="kak-raboti" class="vc-how-section">
+    <div class="vc-container">
+      <span class="vc-section-label">Как работи</span>
+      <h2 class="vc-h2">Започвате за дни, не за месеци</h2>
+      <div class="vc-steps-layout" x-data="{ activeStep: 0 }">
+        <div class="vc-step-buttons">
+          <button @click="activeStep = 0" :class="{ active: activeStep === 0 }" class="vc-step-btn">
+            <span class="vc-step-num">01</span>
+            <span><span class="vc-step-title">Прехвърляме данните ви — безплатно</span><span class="vc-step-text">Свързвате се с нас, а ние извличаме картоните, клиентите и историята от стария ви софтуер. Не започвате от нула.</span></span>
+          </button>
+          <button @click="activeStep = 1" :class="{ active: activeStep === 1 }" class="vc-step-btn">
+            <span class="vc-step-num">02</span>
+            <span><span class="vc-step-title">Влизате от всяко устройство</span><span class="vc-step-text">Компютър на рецепцията, лаптоп, телефон в кабинета — отваряте браузър и работите. Без инсталации.</span></span>
+          </button>
+          <button @click="activeStep = 2" :class="{ active: activeStep === 2 }" class="vc-step-btn">
+            <span class="vc-step-num">03</span>
+            <span><span class="vc-step-title">Системата работи за вас</span><span class="vc-step-text">Автоматичните напомняния за ваксини и обезпаразитяване се изпращат сами. По-малко пропуснати прегледи.</span></span>
+          </button>
+        </div>
+
+        <div class="vc-step-panel">
+          <div x-show="activeStep === 0">
+            <div class="vc-step-panel-label"><i class="ti ti-transfer" aria-hidden="true"></i>Миграция на данни</div>
+            <div class="vc-migration-row">
+              <div class="vc-migration-box"><div class="vc-migration-label">Стар софтуер</div><div class="vc-migration-count">2 480</div><div class="vc-migration-sub">картона</div></div>
+              <i class="ti ti-arrow-right vc-migration-arrow" aria-hidden="true"></i>
+              <div class="vc-migration-box vc-migration-box--active"><div class="vc-migration-label vc-migration-label--active">VetCare</div><div class="vc-migration-count vc-migration-count--active">2 480</div><div class="vc-migration-sub vc-migration-sub--active">прехвърлени</div></div>
+            </div>
+            <div class="vc-progress-bar"><div class="vc-progress-fill" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Миграция завършена"></div></div>
+            <div class="vc-step-ok"><i class="ti ti-check" aria-hidden="true"></i>Готово — нищо не е изгубено, безплатно.</div>
+          </div>
+          <div x-show="activeStep === 1" style="display:none">
+            <div class="vc-step-panel-label"><i class="ti ti-devices" aria-hidden="true"></i>Достъп от всяко устройство</div>
+            <div class="vc-devices-row" aria-hidden="true">
+              <div class="vc-device vc-device--desktop"><div class="vc-device-screen"></div><div class="vc-device-base"></div><div class="vc-device-label">Компютър</div></div>
+              <div class="vc-device vc-device--tablet"><div class="vc-device-screen"></div><div class="vc-device-label">Таблет</div></div>
+              <div class="vc-device vc-device--phone"><div class="vc-device-screen"></div><div class="vc-device-label">Телефон</div></div>
+            </div>
+            <div class="vc-step-ok vc-step-ok--center"><i class="ti ti-check" aria-hidden="true"></i>Отваряте браузър и работите. Без инсталации.</div>
+          </div>
+          <div x-show="activeStep === 2" style="display:none">
+            <div class="vc-step-panel-label"><i class="ti ti-bell" aria-hidden="true"></i>Автоматични напомняния</div>
+            <div class="vc-reminders-list">
+              <div class="vc-reminder-card vc-reminder-card--primary"><span class="vc-reminder-icon vc-reminder-icon--primary" aria-hidden="true"><i class="ti ti-bell"></i></span><div><div class="vc-reminder-title">До клиента · SMS</div><div class="vc-reminder-sub">„Ваксината на Рекс изтича на 15 юли."</div></div></div>
+              <div class="vc-reminder-card vc-reminder-card--secondary"><span class="vc-reminder-icon vc-reminder-icon--secondary" aria-hidden="true"><i class="ti ti-shield-check"></i></span><div><div class="vc-reminder-title">До вас · обезпаразитяване</div><div class="vc-reminder-sub">3 клиента този месец</div></div></div>
+            </div>
+            <div class="vc-step-ok"><i class="ti ti-check" aria-hidden="true"></i>По-малко пропуснати прегледи, повече върнати клиенти.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFITS -->
+  <section id="polzi" class="vc-benefits-section">
+    <div class="vc-container">
+      <span class="vc-section-label">Ключови ползи</span>
+      <h2 class="vc-h2">Всичко важно — безплатно</h2>
+      <div class="vc-benefits-grid">
+        <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-coin" aria-hidden="true"></i></span><h3 class="vc-benefit-h3">Без такси за основното</h3><p class="vc-benefit-body">Картони, записвания, напомняния, клиентска база — всичко за ежедневната работа е безплатно. Плащате само ако добавите усъвършенствани AI функции.</p></div>
+        <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-devices" aria-hidden="true"></i></span><h3 class="vc-benefit-h3">Достъпно отвсякъде</h3><p class="vc-benefit-body">Работи в браузъра на всяко устройство — без инсталация, без поддръжка от ваша страна.</p></div>
+        <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-transfer" aria-hidden="true"></i></span><h3 class="vc-benefit-h3">Безплатна миграция на данни</h3><p class="vc-benefit-body">Прехвърляме информацията ви от стария софтуер без допълнително заплащане и без главоболия.</p></div>
+        <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-database-export" aria-hidden="true"></i></span><h3 class="vc-benefit-h3">Данните са ваша собственост</h3><p class="vc-benefit-body">Можете да изтеглите и експортирате всичко по всяко време. Никога няма да ви заключим.</p></div>
+        <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-bell" aria-hidden="true"></i></span><h3 class="vc-benefit-h3">Автоматични напомняния</h3><p class="vc-benefit-body">Ваксини, обезпаразитяване, профилактика — системата напомня вместо вас, на вас и на клиентите ви.</p></div>
+        <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-headset" aria-hidden="true"></i></span><h3 class="vc-benefit-h3">Реална поддръжка</h3><p class="vc-benefit-body">Зад VetCare стоят хора, които отговарят. Първите 20 клиники получават безплатна поддръжка.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section id="istoriya" class="vc-story-section">
+    <div class="vc-container">
+      <div class="vc-story-grid">
+        <div>
+          <div class="vc-story-img-wrapper">
+            <div class="vc-story-shadow" aria-hidden="true"></div>
+            <picture>
+              <img src="assets/images/rex-kolaj.png" alt="Рекс — кучето, заради което създадохме VetCare" width="800" height="600" loading="lazy" class="vc-story-img">
+            </picture>
+          </div>
+        </div>
+        <div>
+          <span class="vc-section-label">Нашата история</span>
+          <h2 class="vc-h2">Как се роди VetCare</h2>
+          <div class="vc-story-prose">
+            <p>Имах куче — Рекс.</p>
+            <p>Рекс носеше постоянно каишка против външни паразити. Бях спокоен, че е защитен. Но когато се разболя от рядка болест, пренасяна от кърлеж, разбрах нещо твърде късно: мислех, че каишката е с девет месеца защита, а последния път от клиниката бяха сложили такава за шест. Срокът ѝ беше изтекъл, без да знам.</p>
+            <p>Софтуерът на клиниката не изпращаше напомняния. А аз нямах никакъв начин да проверя каква каишка е сложена и докога е валидна.</p>
+            <p class="vc-story-emphasis">Рекс не оцеля.</p>
+            <p>След това реших да построя софтуера, който можеше да го спаси — такъв, който напомня навреме, държи информацията достъпна и не оставя място за подобни нелепи пропуски. Това е VetCare.</p>
+            <p>Ние сме екип от инженери и ветеринари — които вярваме, че модерният, грижовен софтуер не бива да е лукс за клиниките. Изграждаме VetCare заедно с ветеринари, които ни казват какво наистина им трябва.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITLIST -->
+  <section id="waitlist" class="vc-waitlist-section">
+    <div class="vc-waitlist-box">
+      <span class="vc-badge vc-badge--white"><i class="ti ti-users" aria-hidden="true"></i>Ранна покана</span>
+      <h2 class="vc-h2">Присъединете се към първите 20 клиники</h2>
+      <p class="vc-section-intro">VetCare тепърва започва — и точно затова е моментът. Първите 20 клиники, които се включат, получават безплатна поддръжка и възможност да оформят продукта според реалните си нужди. Строим това заедно с вас.</p>
+
+      <div x-show="waitDone" style="display:none">
+        <div class="vc-waitlist-success">
+          <i class="ti ti-circle-check" aria-hidden="true"></i>Готово! Запазихме мястото ви — ще се чуем скоро.
+        </div>
+      </div>
+
+      <div x-show="!waitDone">
+        <form @submit.prevent="submitWait($event)" class="vc-form-row">
+          <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = false" aria-label="Имейл за ранна покана" class="vc-input">
+          <button type="submit" class="vc-form-btn vc-waitlist-btn">Запазете мястото си</button>
+        </form>
+        <p x-show="waitErr" role="alert" style="display:none" class="vc-form-err">Моля, въведете валиден имейл адрес.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="ceni" class="vc-pricing-section">
+    <div class="vc-pricing-inner">
+      <span class="vc-section-label vc-section-label--center">Цени</span>
+      <h2 class="vc-h2">Прозрачни цени, без изненади</h2>
+      <div class="vc-pricing-grid">
+        <div class="vc-pricing-card vc-pricing-card--featured">
+          <span class="vc-pricing-badge vc-pricing-badge--featured">Сега и занапред</span>
+          <h3 class="vc-pricing-title">Безплатно</h3>
+          <div class="vc-pricing-price"><span class="vc-pricing-amount">0 лв.</span><span class="vc-pricing-period">/ месец</span></div>
+          <p class="vc-pricing-desc">Всички функции, нужни за ежедневната работа на клиниката, са безплатни. Без начална такса, без скрити такси, без срок и без кредитна карта.</p>
+          <div class="vc-pricing-features">
+            <span class="vc-check-row"><i class="ti ti-check" aria-hidden="true"></i>Картони, записвания и календар</span>
+            <span class="vc-check-row"><i class="ti ti-check" aria-hidden="true"></i>Клиентска база и история</span>
+            <span class="vc-check-row"><i class="ti ti-check" aria-hidden="true"></i>Автоматични напомняния</span>
+            <span class="vc-check-row"><i class="ti ti-check" aria-hidden="true"></i>Безплатна миграция на данни</span>
+          </div>
+        </div>
+        <div class="vc-pricing-card vc-pricing-card--muted">
+          <span class="vc-pricing-badge vc-pricing-badge--muted">Очаквайте скоро</span>
+          <h3 class="vc-pricing-title vc-pricing-title--muted">Усъвършенстван</h3>
+          <div class="vc-pricing-price"><span class="vc-pricing-amount vc-pricing-amount--muted">—</span></div>
+          <p class="vc-pricing-desc">Допълнителни функции с изкуствен интелект, които оптимизират работата на клиниката. Ранните потребители ще получат специални условия.</p>
+          <div class="vc-pricing-features">
+            <span class="vc-check-row vc-check-row--muted"><i class="ti ti-sparkles" aria-hidden="true"></i>AI оптимизация на графика</span>
+            <span class="vc-check-row vc-check-row--muted"><i class="ti ti-sparkles" aria-hidden="true"></i>Интелигентни предложения</span>
+            <span class="vc-check-row vc-check-row--muted"><i class="ti ti-sparkles" aria-hidden="true"></i>Специални условия за ранните</span>
+          </div>
+        </div>
+      </div>
+      <p class="vc-pricing-note">Каквото и да изберете, данните ви остават ваши и можете да ги изтеглите по всяко време.</p>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="demo" class="vc-demo-section">
+    <img src="assets/images/rex-full.svg" alt="" aria-hidden="true" width="220" height="270" class="vc-demo-bg-img">
+    <div class="vc-demo-container">
+      <div class="vc-demo-grid">
+        <div>
+          <span class="vc-section-label vc-section-label--light">Демо</span>
+          <h2 class="vc-h2 vc-demo-h2">Пробвайте VetCare сега</h2>
+          <p class="vc-demo-desc">Без инсталация, без ангажимент. Въведете имейла си и влезте в готов демо акаунт с примерни данни — разгледайте на спокойствие как работи всичко.</p>
+        </div>
+        <div>
+          <div x-show="demoDone" style="display:none">
+            <div class="vc-demo-success">
+              <i class="ti ti-circle-check vc-demo-success-icon" aria-hidden="true"></i>
+              <div><div class="vc-demo-success-title">Готово — проверете имейла си</div><div class="vc-demo-success-text">Изпратихме ви линк за вход в демо акаунта. Демо средата се обновява ежедневно.</div></div>
+            </div>
+          </div>
+          <form x-show="!demoDone" @submit.prevent="submitDemo($event)" class="vc-demo-form">
+            <label for="vc-demo-email" class="vc-label vc-label--light">Имейл</label>
+            <div class="vc-form-row">
+              <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" @input="demoErr = false" class="vc-demo-input">
+              <button type="submit" class="vc-form-btn vc-demo-btn">Влез в демото<i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+            </div>
+            <p x-show="demoErr" role="alert" style="display:none" class="vc-demo-err">Моля, въведете валиден имейл адрес.</p>
+            <p class="vc-demo-hint"><i class="ti ti-info-circle" aria-hidden="true"></i>Демо средата се обновява ежедневно. Поиграйте си — нищо не можете да счупите.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="vc-faq-section">
+    <div class="vc-faq-inner">
+      <span class="vc-section-label vc-section-label--center">ЧЗВ</span>
+      <h2 class="vc-h2">Често задавани въпроси</h2>
+      <div class="vc-faq-list">
+
+        <div class="vc-faq-item">
+          <button @click="faqOpen = faqOpen === 0 ? null : 0" :aria-expanded="(faqOpen === 0).toString()" class="vc-faq-btn">
+            <span>Наистина ли е безплатно?</span>
+            <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 0 }" aria-hidden="true"></i>
+          </button>
+          <div x-show="faqOpen === 0" class="vc-faq-answer" style="display:none">
+            <p>Да. Всички основни функции за работата на клиниката са безплатни, без срок и без кредитна карта. В бъдеще ще предложим платен план само с усъвършенствани функции.</p>
+          </div>
+        </div>
+
+        <div class="vc-faq-item">
+          <button @click="faqOpen = faqOpen === 1 ? null : 1" :aria-expanded="(faqOpen === 1).toString()" class="vc-faq-btn">
+            <span>Трябва ли да инсталирам нещо?</span>
+            <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 1 }" aria-hidden="true"></i>
+          </button>
+          <div x-show="faqOpen === 1" class="vc-faq-answer" style="display:none">
+            <p>Не. VetCare работи изцяло в браузъра, на всяко устройство.</p>
+          </div>
+        </div>
+
+        <div class="vc-faq-item">
+          <button @click="faqOpen = faqOpen === 2 ? null : 2" :aria-expanded="(faqOpen === 2).toString()" class="vc-faq-btn">
+            <span>Какво става с данните ми от стария софтуер?</span>
+            <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 2 }" aria-hidden="true"></i>
+          </button>
+          <div x-show="faqOpen === 2" class="vc-faq-answer" style="display:none">
+            <p>Мигрираме ги безплатно. Свързвате се с нас и ние се грижим да прехвърлим картоните, клиентите и историята.</p>
+          </div>
+        </div>
+
+        <div class="vc-faq-item">
+          <button @click="faqOpen = faqOpen === 3 ? null : 3" :aria-expanded="(faqOpen === 3).toString()" class="vc-faq-btn">
+            <span>Чии са данните ми?</span>
+            <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 3 }" aria-hidden="true"></i>
+          </button>
+          <div x-show="faqOpen === 3" class="vc-faq-answer" style="display:none">
+            <p>Изцяло ваши. Можете да ги експортирате и изтеглите по всяко време.</p>
+          </div>
+        </div>
+
+        <div class="vc-faq-item">
+          <button @click="faqOpen = faqOpen === 4 ? null : 4" :aria-expanded="(faqOpen === 4).toString()" class="vc-faq-btn">
+            <span>Какви напомняния изпраща системата?</span>
+            <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 4 }" aria-hidden="true"></i>
+          </button>
+          <div x-show="faqOpen === 4" class="vc-faq-answer" style="display:none">
+            <p>Автоматични напомняния за ваксини, обезпаразитяване и профилактични прегледи — до вас и до клиентите ви.</p>
+          </div>
+        </div>
+
+        <div class="vc-faq-item">
+          <button @click="faqOpen = faqOpen === 5 ? null : 5" :aria-expanded="(faqOpen === 5).toString()" class="vc-faq-btn">
+            <span>Подходящ ли е за малка клиника?</span>
+            <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 5 }" aria-hidden="true"></i>
+          </button>
+          <div x-show="faqOpen === 5" class="vc-faq-answer" style="display:none">
+            <p>Точно за това е създаден — за клиники без IT отдел и без бюджет за скъп софтуер.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="kontakti" class="vc-contact-section">
+    <div class="vc-contact-inner">
+      <div class="vc-contact-grid">
+        <div>
+          <span class="vc-section-label">Контакти</span>
+          <h2 class="vc-h2">Имате въпрос? Пишете ни</h2>
+          <p class="vc-section-intro">Не намерихте отговора си по-горе? Оставете ни съобщение и ще ви отговорим възможно най-скоро.</p>
+          <a href="mailto:hello@vetcare.bg" class="vc-contact-email-link">
+            <span class="vc-contact-email-icon"><i class="ti ti-mail" aria-hidden="true"></i></span>
+            <span class="vc-contact-email-text"><span class="vc-contact-email-label">Или ни пишете директно</span><span class="vc-contact-email-value">hello@vetcare.bg</span></span>
+          </a>
+        </div>
+        <div>
+          <div x-show="contactDone" style="display:none">
+            <div class="vc-contact-success">
+              <i class="ti ti-circle-check vc-contact-success-icon" aria-hidden="true"></i>
+              <div><div class="vc-contact-success-title">Благодарим! Получихме съобщението ви.</div><div class="vc-contact-success-text">Ще ви отговорим възможно най-скоро на посочения имейл.</div></div>
+            </div>
+          </div>
+          <form x-show="!contactDone" @submit.prevent="submitContact($event)" class="vc-contact-form">
+            <div aria-hidden="true" class="vc-contact-honeypot">
+              <label>Оставете това поле празно<input type="text" tabindex="-1" autocomplete="off" x-model="contactHoney"></label>
+            </div>
+            <div>
+              <label for="vc-contact-name" class="vc-label">Име <span class="vc-contact-optional">(по избор)</span></label>
+              <input id="vc-contact-name" type="text" autocomplete="name" x-model="contactName" class="vc-input">
+            </div>
+            <div>
+              <label for="vc-contact-email" class="vc-label">Имейл</label>
+              <input id="vc-contact-email" type="email" required autocomplete="email" placeholder="вашият имейл" x-model="contactEmail" @input="contactErr = ''" class="vc-input">
+            </div>
+            <div>
+              <label for="vc-contact-msg" class="vc-label">Съобщение</label>
+              <textarea id="vc-contact-msg" required placeholder="С какво можем да помогнем?" x-model="contactMessage" @input="contactErr = ''" class="vc-input vc-textarea"></textarea>
+            </div>
+            <p x-show="contactErr" role="alert" style="display:none" class="vc-contact-err-msg"><i class="ti ti-alert-circle" aria-hidden="true"></i><span x-text="contactErr"></span></p>
+            <button type="submit" class="vc-form-btn vc-contact-btn">Изпрати<i class="ti ti-send" aria-hidden="true"></i></button>
+            <p class="vc-contact-footer-note">Ще ви отговорим възможно най-скоро.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="vc-footer">
+    <div class="vc-footer-inner">
+      <div class="vc-footer-top">
+        <div class="vc-footer-brand">
+          <div class="vc-footer-logo">
+            <img src="assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
+            <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
+          </div>
+          <p class="vc-footer-tagline">Модерен, грижовен софтуер за ветеринарни клиники. Основното — безплатно, завинаги.</p>
+        </div>
+        <nav class="vc-footer-nav" aria-label="Навигация">
+          <span class="vc-footer-nav-heading">Навигация</span>
+          <a href="#kak-raboti" class="vc-footer-nav-link">Как работи</a>
+          <a href="#polzi" class="vc-footer-nav-link">Ползи</a>
+          <a href="#ceni" class="vc-footer-nav-link">Цени</a>
+          <a href="#istoriya" class="vc-footer-nav-link">История</a>
+        </nav>
+        <nav class="vc-footer-nav" aria-label="Връзки">
+          <span class="vc-footer-nav-heading">Връзка</span>
+          <a href="#demo" class="vc-footer-nav-link">Пробвай демо</a>
+          <a href="#waitlist" class="vc-footer-nav-link">Ранна покана</a>
+          <a href="#kontakti" class="vc-footer-nav-link">Контакти</a>
+          <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
+        </nav>
+      </div>
+      <div class="vc-footer-bottom">
+        <span>© 2026 VetCare</span>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<a href="#demo" class="vc-sticky-cta" aria-label="Пробвай демо — VetCare">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+
+</body>
+</html>

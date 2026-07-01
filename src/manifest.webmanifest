@@ -1,0 +1,12 @@
+{
+  "name": "VetCare",
+  "short_name": "VetCare",
+  "description": "Модерен софтуер за ветеринарна клиника без месечни такси",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#207885",
+  "icons": [
+    { "src": "/assets/rex-icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
