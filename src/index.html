@@ -43,6 +43,10 @@
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css"></noscript>
   <link rel="stylesheet" href="assets/css/styles.min.css">
 
+  <!-- Demo-provisioning API endpoint. Leave empty to auto-detect (local dev / dev VPS / same-origin);
+       set content to the app's URL per deploy where the app is not same-origin (e.g. production). -->
+  <meta name="vetcare-demo-api" content="">
+
   <style>[x-cloak]{display:none!important}</style>
   <script defer src="assets/js/main.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
@@ -370,7 +374,9 @@
             </div>
           </div>
           <form x-show="!demoDone" @submit.prevent="submitDemo($event)" class="vc-demo-form">
-            <input type="text" x-model="demoHoney" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
+            <div aria-hidden="true" class="vc-honeypot">
+              <label>Оставете това поле празно<input type="text" tabindex="-1" autocomplete="off" x-model="demoHoney"></label>
+            </div>
             <label for="vc-demo-email" class="vc-label vc-label--light">Имейл</label>
             <div class="vc-form-row">
               <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" @input="demoErr = ''" class="vc-demo-input">

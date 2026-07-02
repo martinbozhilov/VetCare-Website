@@ -4,8 +4,26 @@ const VETCARE_CONTACT = {
   web3formsAccessKey: 'e18d1f2a-aad9-4407-bb36-ef1fe85f6e8a', // get at https://web3forms.com — tied to hello@vetcare.bg
 };
 
-// Backend demo-provisioning endpoint (app domain). Override per environment.
-const VETCARE_DEMO_API = 'https://dev.vetcare.bg/api/demo/request';
+// Backend demo-provisioning endpoint, resolved per environment:
+//   1. an explicit <meta name="vetcare-demo-api" content="..."> (set per deploy) always wins;
+//   2. otherwise auto-detected from the current host (local dev / dev VPS);
+//   3. else same-origin /api/demo/request (deployments that proxy /api to the app).
+function resolveDemoApi() {
+  const meta = document.querySelector('meta[name="vetcare-demo-api"]');
+  const configured = meta && meta.content && meta.content.trim();
+  if (configured) {
+    return configured;
+  }
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return 'http://localhost:5500/api/demo/request';
+  }
+  if (host === 'dev.vetcare.bg') {
+    return 'https://dev.vetcare.bg/api/demo/request';
+  }
+  return `${window.location.origin}/api/demo/request`;
+}
+const VETCARE_DEMO_API = resolveDemoApi();
 
 async function sendToWeb3Forms(fields) {
   const res = await fetch(VETCARE_CONTACT.web3formsEndpoint, {
