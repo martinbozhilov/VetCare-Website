@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "build": "esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css",
-    "watch": "esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js --watch"
+    "watch": "node scripts/watch.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "sharp": "^0.35.3"
   }
 }

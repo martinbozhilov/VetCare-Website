@@ -1093,17 +1093,21 @@ button { font-family: inherit; }
   justify-content: center;
   padding: 10px 0 0;
 }
+.vc-story-img { position: relative; display: block; width: 100%; height: auto; filter: drop-shadow(0 26px 30px rgba(14,44,56,.18)); }
 .vc-story-shadow {
+  /* rex-kolaj.png is a transparent-background cutout with ~6px of empty
+     canvas below the paws and uneven left/right padding — the dog's actual
+     lowest paw sits at ~43% across the frame, not centered at 50%. Position
+     is measured from the PNG's alpha channel, not the image box. */
   position: absolute;
   left: 50%;
-  bottom: 4%;
+  bottom: 1%;
   transform: translateX(-50%);
-  width: 74%;
-  height: 7%;
-  background: radial-gradient(ellipse at center, rgba(14,44,56,.22), rgba(14,44,56,0) 70%);
-  filter: blur(3px);
-}
-.vc-story-img { position: relative; display: block; width: 100%; height: auto; filter: drop-shadow(0 26px 30px rgba(14,44,56,.18)); }
+  width: 95%;
+  height: 17%;
+  background: radial-gradient(ellipse at center, rgba(14,44,56,.32), rgba(14,44,56,0) 75%);
+  filter: blur(6px);
+} 
 .vc-story-emphasis { font-weight: 500; color: #0e2c38; }
 
 /* Waitlist */
