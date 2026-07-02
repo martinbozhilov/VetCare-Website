@@ -7,6 +7,6 @@
   "background_color": "#ffffff",
   "theme_color": "#207885",
   "icons": [
-    { "src": "/assets/rex-icon.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "/assets/images/rex-icon.svg", "sizes": "any", "type": "image/svg+xml" }
   ]
 }
