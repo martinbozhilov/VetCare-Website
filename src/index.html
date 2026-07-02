@@ -370,6 +370,7 @@
             </div>
           </div>
           <form x-show="!demoDone" @submit.prevent="submitDemo($event)" class="vc-demo-form">
+            <input type="text" x-model="demoHoney" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
             <label for="vc-demo-email" class="vc-label vc-label--light">Имейл</label>
             <div class="vc-form-row">
               <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" @input="demoErr = ''" class="vc-demo-input">

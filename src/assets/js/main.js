@@ -4,6 +4,9 @@ const VETCARE_CONTACT = {
   web3formsAccessKey: 'e18d1f2a-aad9-4407-bb36-ef1fe85f6e8a', // get at https://web3forms.com — tied to hello@vetcare.bg
 };
 
+// Backend demo-provisioning endpoint (app domain). Override per environment.
+const VETCARE_DEMO_API = 'https://dev.vetcare.bg/api/demo/request';
+
 async function sendToWeb3Forms(fields) {
   const res = await fetch(VETCARE_CONTACT.web3formsEndpoint, {
     method: 'POST',
@@ -20,7 +23,7 @@ document.addEventListener('alpine:init', () => {
     scrolled: false,
     faqOpen: null,
 
-    demoEmail: '', demoDone: false, demoErr: '', demoLoading: false,
+    demoEmail: '', demoHoney: '', demoDone: false, demoErr: '', demoLoading: false,
     waitEmail: '', waitDone: false, waitErr: '', waitLoading: false,
     contactName: '', contactEmail: '', contactMessage: '',
     contactHoney: '', contactDone: false, contactErr: '', contactLoading: false,
@@ -36,12 +39,25 @@ document.addEventListener('alpine:init', () => {
     },
     async submitDemo(e) {
       e.preventDefault();
+      if (this.demoHoney.trim()) { this.demoDone = true; return; }
       if (!this.isEmailValid(this.demoEmail)) { this.demoErr = 'Моля, въведете валиден имейл адрес.'; return; }
       this.demoErr = '';
       this.demoLoading = true;
       try {
-        await sendToWeb3Forms({ subject: 'Заявка за демо – VetCare', form_name: 'Демо форма', email: this.demoEmail });
-        this.demoDone = true;
+        const res = await fetch(VETCARE_DEMO_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: this.demoEmail.trim(), website: this.demoHoney }),
+        });
+        if (res.ok) {
+          this.demoDone = true;
+        } else if (res.status === 409) {
+          this.demoErr = 'Вече съществува демо с този имейл — проверете пощата си или влезте.';
+        } else if (res.status === 429) {
+          this.demoErr = 'Твърде много опити. Моля, опитайте отново по-късно.';
+        } else {
+          this.demoErr = `Възникна грешка. Моля, опитайте отново или пишете ни на ${VETCARE_CONTACT.toEmail}.`;
+        }
       } catch {
         this.demoErr = `Възникна грешка. Моля, опитайте отново или пишете ни на ${VETCARE_CONTACT.toEmail}.`;
       } finally {
