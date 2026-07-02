@@ -310,10 +310,10 @@
 
       <div x-show="!waitDone">
         <form @submit.prevent="submitWait($event)" class="vc-form-row">
-          <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = false" aria-label="Имейл за ранна покана" class="vc-input">
-          <button type="submit" class="vc-form-btn vc-waitlist-btn">Запазете мястото си</button>
+          <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = ''" aria-label="Имейл за ранна покана" class="vc-input">
+          <button type="submit" :disabled="waitLoading" class="vc-form-btn vc-waitlist-btn"><span x-text="waitLoading ? 'Изпращане…' : 'Запазете мястото си'"></span></button>
         </form>
-        <p x-show="waitErr" role="alert" style="display:none" class="vc-form-err">Моля, въведете валиден имейл адрес.</p>
+        <p x-show="waitErr" role="alert" style="display:none" class="vc-form-err" x-text="waitErr"></p>
       </div>
     </div>
   </section>
@@ -372,10 +372,10 @@
           <form x-show="!demoDone" @submit.prevent="submitDemo($event)" class="vc-demo-form">
             <label for="vc-demo-email" class="vc-label vc-label--light">Имейл</label>
             <div class="vc-form-row">
-              <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" @input="demoErr = false" class="vc-demo-input">
-              <button type="submit" class="vc-form-btn vc-demo-btn">Влез в демото<i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+              <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" @input="demoErr = ''" class="vc-demo-input">
+              <button type="submit" :disabled="demoLoading" class="vc-form-btn vc-demo-btn"><span x-text="demoLoading ? 'Изпращане…' : 'Влез в демото'"></span><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
             </div>
-            <p x-show="demoErr" role="alert" style="display:none" class="vc-demo-err">Моля, въведете валиден имейл адрес.</p>
+            <p x-show="demoErr" role="alert" style="display:none" class="vc-demo-err" x-text="demoErr"></p>
             <p class="vc-demo-hint"><i class="ti ti-info-circle" aria-hidden="true"></i>Демо средата се обновява ежедневно. Поиграйте си — нищо не можете да счупите.</p>
           </form>
         </div>
@@ -491,7 +491,7 @@
               <textarea id="vc-contact-msg" required placeholder="С какво можем да помогнем?" x-model="contactMessage" @input="contactErr = ''" class="vc-input vc-textarea"></textarea>
             </div>
             <p x-show="contactErr" role="alert" style="display:none" class="vc-contact-err-msg"><i class="ti ti-alert-circle" aria-hidden="true"></i><span x-text="contactErr"></span></p>
-            <button type="submit" class="vc-form-btn vc-contact-btn">Изпрати<i class="ti ti-send" aria-hidden="true"></i></button>
+            <button type="submit" :disabled="contactLoading" class="vc-form-btn vc-contact-btn"><span x-text="contactLoading ? 'Изпращане…' : 'Изпрати'"></span><i class="ti ti-send" aria-hidden="true"></i></button>
             <p class="vc-contact-footer-note">Ще ви отговорим възможно най-скоро.</p>
           </form>
         </div>

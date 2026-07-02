@@ -19,6 +19,20 @@ npm run watch
 
 `index.html` loads `assets/js/main.min.js` and `assets/css/styles.min.css`, not the source files. `npm run watch` only re-minifies JS on save — after editing `assets/css/styles.css`, run `npm run build` and refresh manually.
 
+## Form submissions
+
+The demo, waitlist, and contact forms send their data to `hello@vetcare.bg` via [Web3Forms](https://web3forms.com) — a client-side form relay, since this site has no backend of its own.
+
+All delivery config (destination email, endpoint, access key) lives in one place: the `VETCARE_CONTACT` object at the top of `assets/js/main.js`.
+
+```js
+const VETCARE_CONTACT = {
+  toEmail: 'hello@vetcare.bg',
+  web3formsEndpoint: 'https://api.web3forms.com/submit',
+  web3formsAccessKey: 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY',
+};
+```
+
 ## Structure
 
 - `index.html` — all page sections (hero, how it works, benefits, story, pricing, demo, FAQ, contact, footer)

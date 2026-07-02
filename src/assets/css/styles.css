@@ -773,6 +773,10 @@ button { font-family: inherit; }
   cursor: pointer;
   white-space: nowrap;
 }
+.vc-form-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
 
 .vc-footer-nav {
   display: flex;
