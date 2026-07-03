@@ -18,8 +18,20 @@
   --color-success:      #2E9E6B;
   --color-warning:      #E0A23B;
   --color-error:        #D1495B;
+  /* --color-error on --color-primary (dark sections) only measures ~3.25:1,
+     failing WCAG AA (4.5:1) for normal-size text — use this derived tint instead: */
+  --color-error-on-dark: color-mix(in srgb, var(--color-error) 55%, white); /* ~6.9:1 on --color-primary */
 
   /* Typography */
+  /* IMPLEMENTATION NOTE: Poppins' Google Fonts subsets are latin/latin-ext/devanagari only —
+     no cyrillic. Confirmed live (2026-07-03) — this site's Bulgarian body copy does NOT render
+     in Poppins; it silently falls through to the stack's system-font fallback below. Poppins only
+     actually paints on Latin text (the "VetCare" wordmark, digits). Kept as-is deliberately: it's a
+     net performance win (smaller/fewer font files — browsers skip fetching a subset with no matching
+     text) and the site ships at 100 Lighthouse Performance with this setup. If Cyrillic body copy must
+     visibly render in the brand typeface, swap to a geometric sans that ships cyrillic/cyrillic-ext
+     (Montserrat verified to have full Cyrillic support) — that would be a deliberate spec change, not
+     a bug fix. */
   --font-brand: 'Poppins', -apple-system, 'Segoe UI', Roboto, sans-serif;
   --weight-regular: 400;
   --weight-medium:  500;

@@ -26,6 +26,7 @@ document.addEventListener('alpine:init', () => {
     contactHoney: '', contactDone: false, contactErr: '', contactLoading: false,
 
     init() {
+      this.scrolled = window.scrollY > 12;
       window.addEventListener('scroll', () => {
         this.scrolled = window.scrollY > 12;
       }, { passive: true });
@@ -36,6 +37,7 @@ document.addEventListener('alpine:init', () => {
     },
     async submitDemo(e) {
       e.preventDefault();
+      if (this.demoLoading) return;
       if (!this.isEmailValid(this.demoEmail)) { this.demoErr = 'Моля, въведете валиден имейл адрес.'; return; }
       this.demoErr = '';
       this.demoLoading = true;
@@ -50,6 +52,7 @@ document.addEventListener('alpine:init', () => {
     },
     async submitWait(e) {
       e.preventDefault();
+      if (this.waitLoading) return;
       if (!this.isEmailValid(this.waitEmail)) { this.waitErr = 'Моля, въведете валиден имейл адрес.'; return; }
       this.waitErr = '';
       this.waitLoading = true;
@@ -64,6 +67,7 @@ document.addEventListener('alpine:init', () => {
     },
     async submitContact(e) {
       e.preventDefault();
+      if (this.contactLoading) return;
       if (this.contactHoney.trim()) { this.contactDone = true; return; }
       if (!this.isEmailValid(this.contactEmail)) {
         this.contactErr = 'Моля, въведете валиден имейл адрес.';

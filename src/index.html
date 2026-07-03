@@ -35,8 +35,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'">
@@ -303,14 +303,14 @@
       <p class="vc-section-intro">VetCare тепърва започва — и точно затова е моментът. Първите 20 клиники, които се включат, получават безплатна поддръжка и възможност да оформят продукта според реалните си нужди. Строим това заедно с вас.</p>
 
       <div x-show="waitDone" style="display:none">
-        <div class="vc-waitlist-success">
+        <div class="vc-waitlist-success" role="status">
           <i class="ti ti-circle-check" aria-hidden="true"></i>Готово! Запазихме мястото ви — ще се чуем скоро.
         </div>
       </div>
 
       <div x-show="!waitDone">
         <form @submit.prevent="submitWait($event)" class="vc-form-row">
-          <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = ''" aria-label="Имейл за ранна покана" class="vc-input">
+          <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = ''" aria-label="вашият имейл — ранна покана" class="vc-input">
           <button type="submit" :disabled="waitLoading" class="vc-form-btn vc-waitlist-btn"><span x-text="waitLoading ? 'Изпращане…' : 'Запазете мястото си'"></span></button>
         </form>
         <p x-show="waitErr" role="alert" style="display:none" class="vc-form-err" x-text="waitErr"></p>
@@ -364,7 +364,7 @@
         </div>
         <div>
           <div x-show="demoDone" style="display:none">
-            <div class="vc-demo-success">
+            <div class="vc-demo-success" role="status">
               <i class="ti ti-circle-check vc-demo-success-icon" aria-hidden="true"></i>
               <div><div class="vc-demo-success-title">Готово — проверете имейла си</div><div class="vc-demo-success-text">Изпратихме ви линк за вход в демо акаунта. Демо средата се обновява ежедневно.</div></div>
             </div>
@@ -469,7 +469,7 @@
         </div>
         <div>
           <div x-show="contactDone" style="display:none">
-            <div class="vc-contact-success">
+            <div class="vc-contact-success" role="status">
               <i class="ti ti-circle-check vc-contact-success-icon" aria-hidden="true"></i>
               <div><div class="vc-contact-success-title">Благодарим! Получихме съобщението ви.</div><div class="vc-contact-success-text">Ще ви отговорим възможно най-скоро на посочения имейл.</div></div>
             </div>
