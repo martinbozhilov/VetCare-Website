@@ -1,0 +1,45 @@
+:root {
+  /* Brand core */
+  --color-primary:      #0B2F39;  /* Deep Petrol — текст, заглавия */
+  --color-secondary:    #207885;  /* Teal — акценти, бутони, връзки */
+  --color-tertiary:     #134D5A;  /* Mid Teal — второстепенен текст */
+
+  /* Extended */
+  --color-light-teal:   #60AEBA;  /* акценти на тъмен фон */
+  --color-soft-teal:    #4493A0;  /* графики */
+  --color-pale-aqua:    #AFD3D8;  /* фонове, разделители */
+  --color-mist:         #E3F1F3;  /* светли фонове, карти */
+
+  /* Neutrals */
+  --color-white:        #FFFFFF;
+  --color-offwhite:     #F4F8FA;
+
+  /* Functional (извън основната палитра) */
+  --color-success:      #2E9E6B;
+  --color-warning:      #E0A23B;
+  --color-error:        #D1495B;
+
+  /* Typography */
+  --font-brand: 'Poppins', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+
+  /* Surfaces */
+  --bg-page:    var(--color-white);
+  --bg-alt:     var(--color-offwhite);
+  --bg-dark:    var(--color-primary);
+
+  /* Text */
+  --text-main:  var(--color-primary);
+  --text-muted: var(--color-tertiary);
+  --text-on-dark: var(--color-white);
+
+  /* Interactive */
+  --btn-bg:        var(--color-secondary);
+  --btn-bg-hover:  var(--color-tertiary);
+  --btn-text:      var(--color-white);
+  --link:          var(--color-secondary);
+  --link-hover:    var(--color-tertiary);
+}
