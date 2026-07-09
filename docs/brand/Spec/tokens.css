@@ -1,0 +1,57 @@
+:root {
+  /* Brand core */
+  --color-primary:      #0B2F39;  /* Deep Petrol — текст, заглавия */
+  --color-secondary:    #207885;  /* Teal — акценти, бутони, връзки */
+  --color-tertiary:     #134D5A;  /* Mid Teal — второстепенен текст */
+
+  /* Extended */
+  --color-light-teal:   #60AEBA;  /* акценти на тъмен фон */
+  --color-soft-teal:    #4493A0;  /* графики */
+  --color-pale-aqua:    #AFD3D8;  /* фонове, разделители */
+  --color-mist:         #E3F1F3;  /* светли фонове, карти */
+
+  /* Neutrals */
+  --color-white:        #FFFFFF;
+  --color-offwhite:     #F4F8FA;
+
+  /* Functional (извън основната палитра) */
+  --color-success:      #2E9E6B;
+  --color-warning:      #E0A23B;
+  --color-error:        #D1495B;
+  /* --color-error on --color-primary (dark sections) only measures ~3.25:1,
+     failing WCAG AA (4.5:1) for normal-size text — use this derived tint instead: */
+  --color-error-on-dark: color-mix(in srgb, var(--color-error) 55%, white); /* ~6.9:1 on --color-primary */
+
+  /* Typography */
+  /* IMPLEMENTATION NOTE: Poppins' Google Fonts subsets are latin/latin-ext/devanagari only —
+     no cyrillic. Confirmed live (2026-07-03) — this site's Bulgarian body copy does NOT render
+     in Poppins; it silently falls through to the stack's system-font fallback below. Poppins only
+     actually paints on Latin text (the "VetCare" wordmark, digits). Kept as-is deliberately: it's a
+     net performance win (smaller/fewer font files — browsers skip fetching a subset with no matching
+     text) and the site ships at 100 Lighthouse Performance with this setup. If Cyrillic body copy must
+     visibly render in the brand typeface, swap to a geometric sans that ships cyrillic/cyrillic-ext
+     (Montserrat verified to have full Cyrillic support) — that would be a deliberate spec change, not
+     a bug fix. */
+  --font-brand: 'Poppins', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+
+  /* Surfaces */
+  --bg-page:    var(--color-white);
+  --bg-alt:     var(--color-offwhite);
+  --bg-dark:    var(--color-primary);
+
+  /* Text */
+  --text-main:  var(--color-primary);
+  --text-muted: var(--color-tertiary);
+  --text-on-dark: var(--color-white);
+
+  /* Interactive */
+  --btn-bg:        var(--color-secondary);
+  --btn-bg-hover:  var(--color-tertiary);
+  --btn-text:      var(--color-white);
+  --link:          var(--color-secondary);
+  --link-hover:    var(--color-tertiary);
+}

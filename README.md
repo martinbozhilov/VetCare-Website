@@ -7,12 +7,13 @@ Marketing landing page for VetCare, a free veterinary clinic management software
 There's no dev server config in this repo. Serve the folder (or open the file directly) and run the build watcher alongside it:
 
 ```bash
-# Terminal 1: serve the site
-npx serve .
-# or: python -m http.server 8000
-# or just open index.html directly in a browser
+# Terminal 1: serve the site (all source lives in src/)
+npx serve src
+# or: (cd src && python -m http.server 8000)
+# or just open src/index.html directly in a browser
 
 # Terminal 2: one-time setup, then watch for JS changes
+cd src
 npm install
 npm run watch
 ```
@@ -39,5 +40,7 @@ const VETCARE_CONTACT = {
 - `assets/js/main.js` — Alpine.js component with UI state and form handling
 - `assets/css/styles.css` — all styles, organized by section
 - `assets/images/` — site imagery
+
+Everything above lives under the `src/` directory, which is the project root — `cd src` before running any `npm` command, and paths are relative to it.
 
 See [CLAUDE.md](./CLAUDE.md) for more detailed architecture notes and conventions.
