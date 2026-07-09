@@ -172,7 +172,7 @@ document.addEventListener('alpine:init', () => {
           this.demoDone = true;
           this.track('demo_submitted');
         } else if (res.status === 409) {
-          this.demoErr = 'Вече съществува демо с този имейл — проверете пощата си или влезте.';
+          this.demoErr = 'Вече съществува демо с този имейл — проверете пощата си.';
         } else if (res.status === 429) {
           this.demoErr = 'Твърде много опити. Моля, опитайте отново по-късно.';
         } else {
