@@ -5,7 +5,7 @@ const VETCARE_CONTACT = {
 };
 
 const VETCARE_ANALYTICS = {
-  posthogKey: 'REPLACE_WITH_POSTHOG_PROJECT_KEY', // public project key from eu.posthog.com
+  posthogKey: 'phc_B5rBY3ZG9ytQVQoGjTDzcmLg2LdLFyAzNaz2ugk6ewbq', // public project key from eu.posthog.com
   apiHost: 'https://eu.i.posthog.com',
   uiHost: 'https://eu.posthog.com',
 };
