@@ -41,6 +41,9 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css"></noscript>
+
+  <link rel="preconnect" href="https://eu.i.posthog.com">
+  <link rel="preconnect" href="https://eu-assets.i.posthog.com">
   <link rel="stylesheet" href="assets/css/styles.min.css">
 
   <style>[x-cloak]{display:none!important}</style>
@@ -391,7 +394,7 @@
       <div class="vc-faq-list">
 
         <div class="vc-faq-item">
-          <button @click="faqOpen = faqOpen === 0 ? null : 0" :aria-expanded="(faqOpen === 0).toString()" class="vc-faq-btn">
+          <button @click="toggleFaq(0)" :aria-expanded="(faqOpen === 0).toString()" class="vc-faq-btn">
             <span>Наистина ли е безплатно?</span>
             <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 0 }" aria-hidden="true"></i>
           </button>
@@ -401,7 +404,7 @@
         </div>
 
         <div class="vc-faq-item">
-          <button @click="faqOpen = faqOpen === 1 ? null : 1" :aria-expanded="(faqOpen === 1).toString()" class="vc-faq-btn">
+          <button @click="toggleFaq(1)" :aria-expanded="(faqOpen === 1).toString()" class="vc-faq-btn">
             <span>Трябва ли да инсталирам нещо?</span>
             <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 1 }" aria-hidden="true"></i>
           </button>
@@ -411,7 +414,7 @@
         </div>
 
         <div class="vc-faq-item">
-          <button @click="faqOpen = faqOpen === 2 ? null : 2" :aria-expanded="(faqOpen === 2).toString()" class="vc-faq-btn">
+          <button @click="toggleFaq(2)" :aria-expanded="(faqOpen === 2).toString()" class="vc-faq-btn">
             <span>Какво става с данните ми от стария софтуер?</span>
             <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 2 }" aria-hidden="true"></i>
           </button>
@@ -421,7 +424,7 @@
         </div>
 
         <div class="vc-faq-item">
-          <button @click="faqOpen = faqOpen === 3 ? null : 3" :aria-expanded="(faqOpen === 3).toString()" class="vc-faq-btn">
+          <button @click="toggleFaq(3)" :aria-expanded="(faqOpen === 3).toString()" class="vc-faq-btn">
             <span>Чии са данните ми?</span>
             <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 3 }" aria-hidden="true"></i>
           </button>
@@ -431,7 +434,7 @@
         </div>
 
         <div class="vc-faq-item">
-          <button @click="faqOpen = faqOpen === 4 ? null : 4" :aria-expanded="(faqOpen === 4).toString()" class="vc-faq-btn">
+          <button @click="toggleFaq(4)" :aria-expanded="(faqOpen === 4).toString()" class="vc-faq-btn">
             <span>Какви напомняния изпраща системата?</span>
             <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 4 }" aria-hidden="true"></i>
           </button>
@@ -441,7 +444,7 @@
         </div>
 
         <div class="vc-faq-item">
-          <button @click="faqOpen = faqOpen === 5 ? null : 5" :aria-expanded="(faqOpen === 5).toString()" class="vc-faq-btn">
+          <button @click="toggleFaq(5)" :aria-expanded="(faqOpen === 5).toString()" class="vc-faq-btn">
             <span>Подходящ ли е за малка клиника?</span>
             <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 5 }" aria-hidden="true"></i>
           </button>
@@ -527,6 +530,10 @@
       </div>
       <div class="vc-footer-bottom">
         <span>© 2026 VetCare</span>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
       </div>
     </div>
   </footer>
@@ -534,6 +541,17 @@
 </main>
 
 <a href="#demo" class="vc-sticky-cta" aria-label="Пробвай демо — VetCare">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+
+<div x-show="showConsent" style="display:none" class="vc-consent" role="dialog" aria-live="polite" aria-label="Съгласие за бисквитки">
+  <p class="vc-consent-text">
+    Използваме бисквитки и анализ на посещенията, за да подобряваме VetCare. Данните се събират само след вашето съгласие. Повече в
+    <a href="/privacy.html" class="vc-consent-link">политиката за поверителност</a>.
+  </p>
+  <div class="vc-consent-actions">
+    <button type="button" @click="declineAnalytics()" class="vc-consent-btn vc-consent-btn--decline">Отказвам</button>
+    <button type="button" @click="acceptAnalytics()" class="vc-consent-btn">Приемам</button>
+  </div>
+</div>
 
 </body>
 </html>

@@ -6,9 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A single-page marketing site for VetCare (a veterinary clinic SaaS), in Bulgarian. Static HTML/CSS/JS — no framework, no bundler-driven templating, no backend. All content lives in one `index.html`.
 
+**All source lives in the `src/` directory — `src/` is the project root.** `index.html`, `assets/`, `package.json`, `sitemap.xml`, `robots.txt`, etc. all live under `src/`, not the repo root. Run every `npm` command from `src/`, and read every path in this document as relative to `src/` unless stated otherwise (e.g. `assets/js/main.js` means `src/assets/js/main.js`).
+
 ## Commands
 
 ```bash
+cd src              # source + package.json live here — run all npm scripts from src/
 npm install        # one-time, installs esbuild and sharp
 npm run build       # minify assets/js/main.js -> main.min.js and assets/css/styles.css -> styles.min.css
 npm run watch        # re-minify both JS and CSS on every save (via scripts/watch.js, esbuild's JS API in one process)

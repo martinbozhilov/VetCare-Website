@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Политика за поверителност и бисквитки — VetCare</title>
+  <meta name="description" content="Как VetCare събира, използва и защитава личните ви данни — данни от формите за демо, ранна покана и контакти, както и аналитика чрез PostHog след изрично съгласие.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://vetcare.bg/privacy.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://vetcare.bg/privacy.html">
+  <meta property="og:title" content="Политика за поверителност и бисквитки — VetCare">
+  <meta property="og:description" content="Как VetCare събира, използва и защитава личните ви данни.">
+  <meta property="og:locale" content="bg_BG">
+  <meta property="og:site_name" content="VetCare">
+
+  <meta name="theme-color" content="#207885">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css"></noscript>
+
+  <link rel="preconnect" href="https://eu.i.posthog.com">
+  <link rel="preconnect" href="https://eu-assets.i.posthog.com">
+  <link rel="stylesheet" href="assets/css/styles.min.css">
+
+  <style>[x-cloak]{display:none!important}</style>
+  <script defer src="assets/js/main.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body x-data="vetcare">
+
+<a class="vc-skip-link" href="#main-content">Прескочи към съдържанието</a>
+
+<!-- HEADER -->
+<header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }">
+  <div class="vc-header-inner">
+    <a href="index.html" class="vc-logo">
+      <img src="assets/images/rex-icon.svg" alt="VetCare лого — дигиталният Рекс" width="34" height="38">
+      <span class="vc-logo-text">
+        <span class="vc-logo-name">VetCare</span>
+        <span class="vc-logo-sub">VETERINARY SOFTWARE</span>
+      </span>
+    </a>
+
+    <nav class="vc-nav-desktop" aria-label="Главна навигация">
+      <a href="index.html#kak-raboti" class="vc-nav-link">Как работи</a>
+      <a href="index.html#polzi" class="vc-nav-link">Ползи</a>
+      <a href="index.html#ceni" class="vc-nav-link">Цени</a>
+      <a href="index.html#istoriya" class="vc-nav-link">История</a>
+      <a href="index.html#kontakti" class="vc-nav-link">Контакти</a>
+      <a href="index.html#demo" class="vc-cta-btn">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+    </nav>
+
+    <button @click="menuOpen = !menuOpen" aria-label="Меню" :aria-expanded="menuOpen.toString()" class="vc-hamburger">
+      <i :class="menuOpen ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <nav x-show="menuOpen" class="vc-mobile-menu" aria-label="Мобилна навигация" style="display:none">
+    <a href="index.html#kak-raboti" @click="menuOpen = false" class="vc-mobile-menu-link">Как работи</a>
+    <a href="index.html#polzi" @click="menuOpen = false" class="vc-mobile-menu-link">Ползи</a>
+    <a href="index.html#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
+    <a href="index.html#istoriya" @click="menuOpen = false" class="vc-mobile-menu-link">История</a>
+    <a href="index.html#kontakti" @click="menuOpen = false" class="vc-mobile-menu-link">Контакти</a>
+    <a href="index.html#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+  </nav>
+</header>
+
+<main id="main-content">
+
+  <!-- LEGAL / PRIVACY -->
+  <section class="vc-legal-section">
+    <div class="vc-legal-container">
+
+      <span class="vc-section-label">Правна информация</span>
+      <h1 class="vc-legal-title">Политика за поверителност и бисквитки</h1>
+      <p class="vc-legal-meta">Последна актуализация: <strong>9 юли 2026 г.</strong> · Контакт: <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a></p>
+
+      <div class="vc-legal-prose">
+
+        <h2>1. Администратор на лични данни</h2>
+        <p>Администратор на личните ви данни е <strong>„ВЕТ КЕАР" ЕООД</strong>, ЕИК <strong>175420745</strong>, със седалище и адрес на управление: гр. София 1220, р-н „Надежда", ж.к. „Лев Толстой", бл. 39, ет. 6, ап. 35.</p>
+        <p>Не сме определили длъжностно лице по защита на данните (DPO) — това не е задължително за нас съгласно чл. 37 от GDPR. За всички въпроси, свързани с обработката на лични данни, можете да се свържете с нас на <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a>.</p>
+
+        <h2>2. Обхват</h2>
+        <p>Тази политика се отнася за уебсайта <strong>vetcare.bg</strong> и обработката на лични данни, която се извършва при неговото използване — при попълване на формите на сайта и при взаимодействието ви със страницата, ако сте дали съгласие за аналитика.</p>
+
+        <h2>3. Какви лични данни събираме</h2>
+        <p>Събираме два основни вида данни:</p>
+        <ul>
+          <li><strong>Данни от формите на сайта</strong> — при заявка за демо и при ранна покана: единствено имейл адрес; при контактната форма: имейл адрес, а по желание — и име и текст на съобщението. Тези данни се препращат чрез услугата <a href="https://web3forms.com" class="vc-legal-link" target="_blank" rel="noopener">Web3Forms</a> директно към нашата пощенска кутия <strong>hello@vetcare.bg</strong>.</li>
+          <li><strong>Аналитични данни чрез PostHog</strong> (EU регион) — <strong>единствено след изрично съгласие</strong> от ваша страна: посещения на страницата, автоматично прихванати взаимодействия и кликове (<code>autocapture</code>), дълбочина на скролване, отваряне на въпроси от ЧЗВ, събития при изпращане на форма, IP адрес и приблизителна локация, данни за устройство и браузър, както и записи на сесии (session recordings), при които всички полета за въвеждане са <strong>маскирани</strong> (<code>maskAllInputs</code>) — тоест съдържанието, което въвеждате в тях, не се записва.</li>
+        </ul>
+
+        <h2>4. Цели и правно основание за обработка</h2>
+        <ul>
+          <li>Обработката на данни от формите (демо, ранна покана, контакти) се извършва с цел отговор на вашето запитване и предприемане на действия по ваше искане преди сключване на договор — на основание <strong>чл. 6, §1, б. „б"</strong> от GDPR, а доколкото е приложимо — и на основание вашето съгласие при подаване на формата (<strong>чл. 6, §1, б. „а"</strong>).</li>
+          <li>Обработката на аналитични данни и бисквитки се извършва единствено на основание вашето <strong>изрично съгласие</strong>, дадено чрез банера за бисквитки (<strong>чл. 6, §1, б. „а"</strong>).</li>
+        </ul>
+
+        <h2>5. Бисквитки и подобни технологии</h2>
+        <p>При първо посещение виждате банер за съгласие. Аналитичните бисквитки и записите на сесии се активират <strong>единствено</strong> след като натиснете „Приемам". Ако изберете „Отказвам", никакви аналитични скриптове или бисквитки не се зареждат. Изборът ви се запазва локално в браузъра ви (<code>localStorage</code>, ключ <code>vc-analytics-consent</code>) и не се изпраща към трети страни, преди да дадете съгласие.</p>
+
+        <h2>6. Получатели / обработващи лични данни</h2>
+        <ul>
+          <li><strong>Web3Forms</strong> — препраща съдържанието на попълнените форми към нашия имейл, действайки като обработващ лични данни от наше име.</li>
+          <li><strong>PostHog</strong> (EU хостинг) — доставчик на аналитика, действащ като обработващ лични данни, използван само след ваше съгласие.</li>
+        </ul>
+        <p>Не продаваме и не споделяме личните ви данни с трети страни за рекламни цели.</p>
+
+        <h2>7. Международен трансфер на данни</h2>
+        <p>Данните, обработвани чрез PostHog, се съхраняват в инфраструктура на територията на Европейския съюз (EU регион). Услугата Web3Forms обаче е установена извън ЕС (САЩ), поради което данните, изпратени чрез формите на сайта, може да бъдат обработвани извън Европейското икономическо пространство. В тези случаи трансферът се извършва при подходящи гаранции, като Стандартни договорни клаузи на Европейската комисия.</p>
+
+        <h2>8. Срокове за съхранение</h2>
+        <ul>
+          <li>Кореспонденция и данни, получени чрез формите на сайта (демо, ранна покана, контакти) — до <strong>12 месеца</strong> след приключване на кореспонденцията, освен ако по-дълъг срок не се изисква по закон.</li>
+          <li>Аналитични данни (посещения, събития, взаимодействия) — до <strong>12 месеца</strong> съгласно настройките на плана ни в PostHog.</li>
+          <li>Записи на сесии (session recordings) — до <strong>30 дни</strong>, след което се изтриват автоматично.</li>
+        </ul>
+
+        <h2>9. Вашите права по GDPR</h2>
+        <p>Съгласно Общия регламент за защита на данните (GDPR) имате право на:</p>
+        <ul>
+          <li>достъп до личните ви данни;</li>
+          <li>коригиране на неточни данни;</li>
+          <li>изтриване на данните („право да бъдеш забравен");</li>
+          <li>ограничаване на обработката;</li>
+          <li>преносимост на данните;</li>
+          <li>възражение срещу обработката;</li>
+          <li>оттегляне на съгласие по всяко време, без това да засяга законосъобразността на обработката преди оттеглянето.</li>
+        </ul>
+        <p>За да упражните тези права, пишете ни на <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a>. Ще отговорим в срок до <strong>един месец</strong> от получаване на искането ви, съгласно чл. 12 от GDPR. Имате право и да подадете жалба до <a href="https://www.cpdp.bg/" class="vc-legal-link" target="_blank" rel="noopener">Комисията за защита на личните данни (КЗЛД)</a>.</p>
+
+        <h2>10. Оттегляне на съгласието за бисквитки</h2>
+        <p>Можете да оттеглите съгласието си за аналитика по всяко време — толкова лесно, колкото сте го дали:</p>
+        <button type="button" @click="openConsent()" class="vc-legal-manage-btn">Управление на бисквитките</button>
+        <p>Бутонът показва отново банера за съгласие, където можете да промените избора си. Алтернативно, можете да изчистите данните за сайта в браузъра си (бисквитки/localStorage за vetcare.bg) или да се свържете с нас на <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a>.</p>
+
+        <h2>11. Автоматизирано вземане на решения</h2>
+        <p>Не извършваме автоматизирано вземане на индивидуални решения, включително профилиране, което поражда правни последици за вас или ви засяга по подобен съществен начин по смисъла на чл. 22 от GDPR.</p>
+
+        <h2>12. Данни на непълнолетни лица</h2>
+        <p>VetCare е услуга, насочена към бизнеси и ветеринарни клиники, а не към деца. Не събираме съзнателно лични данни на непълнолетни лица.</p>
+
+        <h2>13. Промени в политиката</h2>
+        <p>Можем периодично да актуализираме тази политика, за да отразява промени в обработваните данни или в приложимото законодателство. Датата на последната актуализация е посочена в началото на страницата.</p>
+
+        <h2>14. Контакт</h2>
+        <p>За всякакви въпроси относно тази политика или обработката на личните ви данни, пишете ни на <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a> или подайте жалба до <a href="https://www.cpdp.bg/" class="vc-legal-link" target="_blank" rel="noopener">КЗЛД (cpdp.bg)</a>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="vc-footer">
+    <div class="vc-footer-inner">
+      <div class="vc-footer-top">
+        <div class="vc-footer-brand">
+          <div class="vc-footer-logo">
+            <img src="assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
+            <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
+          </div>
+          <p class="vc-footer-tagline">Модерен, грижовен софтуер за ветеринарни клиники. Основното — безплатно, завинаги.</p>
+        </div>
+        <nav class="vc-footer-nav" aria-label="Навигация">
+          <span class="vc-footer-nav-heading">Навигация</span>
+          <a href="index.html#kak-raboti" class="vc-footer-nav-link">Как работи</a>
+          <a href="index.html#polzi" class="vc-footer-nav-link">Ползи</a>
+          <a href="index.html#ceni" class="vc-footer-nav-link">Цени</a>
+          <a href="index.html#istoriya" class="vc-footer-nav-link">История</a>
+        </nav>
+        <nav class="vc-footer-nav" aria-label="Връзки">
+          <span class="vc-footer-nav-heading">Връзка</span>
+          <a href="index.html#demo" class="vc-footer-nav-link">Пробвай демо</a>
+          <a href="index.html#waitlist" class="vc-footer-nav-link">Ранна покана</a>
+          <a href="index.html#kontakti" class="vc-footer-nav-link">Контакти</a>
+          <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
+        </nav>
+      </div>
+      <div class="vc-footer-bottom">
+        <span>© 2026 VetCare</span>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<div x-show="showConsent" style="display:none" class="vc-consent" role="dialog" aria-live="polite" aria-label="Съгласие за бисквитки">
+  <p class="vc-consent-text">
+    Използваме бисквитки и анализ на посещенията, за да подобряваме VetCare. Данните се събират само след вашето съгласие. Повече в
+    <a href="privacy.html" class="vc-consent-link">политиката за поверителност</a>.
+  </p>
+  <div class="vc-consent-actions">
+    <button type="button" @click="declineAnalytics()" class="vc-consent-btn vc-consent-btn--decline">Отказвам</button>
+    <button type="button" @click="acceptAnalytics()" class="vc-consent-btn">Приемам</button>
+  </div>
+</div>
+
+</body>
+</html>
