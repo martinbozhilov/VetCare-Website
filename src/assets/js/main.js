@@ -109,6 +109,7 @@ document.addEventListener('alpine:init', () => {
         loadPostHog().then((ph) => {
           ph.opt_in_capturing();
           ph.startSessionRecording();
+          ph.capture('cookie_consent_given', { source: 'consent_banner' });
         });
       }
     },
