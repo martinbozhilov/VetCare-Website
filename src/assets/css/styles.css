@@ -1273,6 +1273,7 @@ button { font-family: inherit; }
 .vc-contact-success-title { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
 .vc-contact-success-text { font-size: 13.5px; line-height: 1.55; color: var(--color-tertiary); }
 .vc-contact-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.vc-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .vc-contact-optional { color: var(--color-tertiary); font-weight: 400; }
 .vc-contact-err-msg { margin: 0; font-size: 13px; color: var(--color-error); }
 .vc-contact-err-msg i { font-size: 16px; vertical-align: middle; margin-right: 5px; }
