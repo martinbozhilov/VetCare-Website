@@ -1,0 +1,161 @@
+name: 🚀 Deploy Website
+
+# Manual trigger only (button in GitHub Actions).
+#
+# The image tag is derived automatically from the branch:
+#   - main               → latest
+#   - release/<version>  → <version>  (e.g. release/0.0.1 → 0.0.1)
+#
+# NOTE: The VPS must already have the `vetcare-website` Quadlet unit, GHCR pull
+# auth, and the front-nginx vhost in place — this workflow only rewrites the
+# image tag on an existing unit and restarts it. See README / deploy docs.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy (main for latest, or release/x.x.x for a version)'
+        required: true
+        type: string
+        default: 'main'
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: martinbozhilov
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # 0. Validate branch + derive image tag
+  # ─────────────────────────────────────────────────────────────
+  validate:
+    name: 🔍 Validate & derive tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.derive.outputs.tag }}
+    steps:
+      - name: 📥 Checkout branch (verifies it exists)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 1
+
+      - name: Derive image tag from branch
+        id: derive
+        run: |
+          BRANCH="${{ github.event.inputs.branch }}"
+
+          # derive the image tag from the branch name
+          if [ "$BRANCH" = "main" ]; then
+            TAG="latest"
+          elif echo "$BRANCH" | grep -q '^release/'; then
+            # release/0.0.1 → 0.0.1
+            TAG="${BRANCH#release/}"
+            if echo "$TAG" | grep -q '/'; then
+              echo "❌ Invalid version in '${BRANCH}' (extra '/')."
+              exit 1
+            fi
+          else
+            echo "❌ Only 'main' or 'release/x.x.x' branches are allowed."
+            exit 1
+          fi
+
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "✅ Branch '${BRANCH}' → image tag '${TAG}'"
+
+  # ─────────────────────────────────────────────────────────────
+  # 1. Build & Push — nginx image with the built static site
+  # ─────────────────────────────────────────────────────────────
+  build-and-push:
+    name: 🔨 Build & Push Image
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TAG: ${{ needs.validate.outputs.tag }}
+    steps:
+      - name: 📥 Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: 🔑 Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Push overwrites the same tag on redeploy.
+      - name: 🔨 Build & Push website
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/vetcare-website:${{ env.TAG }}
+
+  # ─────────────────────────────────────────────────────────────
+  # 2. Deploy → PROD VPS (Quadlet: rewrite tag → pull → restart)
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: 🚀 Deploy → PRODUCTION VPS
+    runs-on: ubuntu-latest
+    needs: [validate, build-and-push]
+    steps:
+      - name: 🚀 SSH → Deploy website
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_VPS_HOST }}
+          username: ${{ secrets.PROD_VPS_USER }}
+          key: ${{ secrets.PROD_VPS_SSH_KEY }}
+          port: ${{ secrets.PROD_VPS_PORT }}
+          envs: TAG
+          script: |
+            set -euo pipefail
+
+            QUADLET_DIR="$HOME/.config/containers/systemd"
+            IMG="ghcr.io/martinbozhilov/vetcare-website"
+            UNIT="vetcare-website"
+            FILE="${QUADLET_DIR}/${UNIT}.container"
+            HEALTH_PORT="8085"   # must match PublishPort in the Quadlet unit + front-nginx proxy_pass
+
+            echo "🏷️  Deploy tag: $TAG"
+            echo "📦 website → $TAG"
+
+            # rewrite the Image= line with the new tag
+            sed -i "s|^Image=${IMG}:.*|Image=${IMG}:${TAG}|" "$FILE"
+
+            # pull the new image (overwrites local cache)
+            podman pull "${IMG}:${TAG}"
+
+            # reload Quadlet definition and restart the service
+            systemctl --user daemon-reload
+            systemctl --user restart "${UNIT}"
+
+            # ── Health check (container publishes on loopback:HEALTH_PORT) ──
+            echo "🏥 Health check (waiting 10s)..."
+            sleep 10
+            HEALTH=$(curl -s -o /dev/null -w "%{http_code}" \
+              "http://localhost:${HEALTH_PORT}/" || echo "000")
+
+            if [ "$HEALTH" != "200" ]; then
+              echo "❌ Health check FAILED (HTTP: $HEALTH)"
+              systemctl --user status "${UNIT}" --no-pager | head -20 || true
+              exit 1
+            fi
+
+            # clean up old images
+            podman image prune -f
+
+            echo "✅ Website LIVE → tag $TAG"
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+
+      - name: ✅ Success
+        if: success()
+        run: echo "🎉 Website Deployed → ${{ github.event.inputs.branch }} (tag ${{ needs.validate.outputs.tag }})"
+
+      - name: ❌ Failed
+        if: failure()
+        run: echo "🔴 Website Deploy FAILED!"
