@@ -21,6 +21,11 @@ on:
 env:
   REGISTRY: ghcr.io
   OWNER: martinbozhilov
+  # Baked into the page at build time (see ARG DEMO_API_URL in the Dockerfile) — the site is
+  # static, so there is no runtime env to read. PROD serves the marketing site on vetcare.bg
+  # while the app lives on app.vetcare.bg, so this must be the app's absolute URL, and that
+  # origin must be listed in the app's DemoRequestApi:AllowedOrigins (CORS).
+  DEMO_API_URL: https://app.vetcare.bg/api/demo/request
 
 jobs:
   # ─────────────────────────────────────────────────────────────
@@ -94,6 +99,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ghcr.io/${{ env.OWNER }}/vetcare-website:${{ env.TAG }}
+          build-args: |
+            DEMO_API_URL=${{ env.DEMO_API_URL }}
 
   # ─────────────────────────────────────────────────────────────
   # 2. Deploy → PROD VPS (Quadlet: rewrite tag → pull → restart)

@@ -16,6 +16,23 @@ RUN BUILD_ID=$(date +%s) && \
     sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html && \
     sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html
 
+# Demo-provisioning endpoint, baked into the <meta name="vetcare-demo-api"> tag that
+# resolveDemoApi() in main.js reads first. The site is static (no runtime env), so this is
+# the only configuration seam — the image is therefore environment-specific, which is why
+# the deploy workflow passes the value explicitly per build.
+#
+# The empty-content meta in index.html is what gets replaced; the grep is a fail-fast guard so
+# a drifted pattern breaks the build instead of silently shipping the empty tag. That matters:
+# resolveDemoApi()'s last fallback is same-origin /api/demo/request, which on vetcare.bg (static
+# nginx, no /api) is a 404 — a silent no-match here would ship a dead demo form.
+ARG DEMO_API_URL="https://app.vetcare.bg/api/demo/request"
+RUN if [ -n "$DEMO_API_URL" ]; then \
+      sed -i "s|<meta name=\"vetcare-demo-api\" content=\"\">|<meta name=\"vetcare-demo-api\" content=\"${DEMO_API_URL}\">|" index.html && \
+      grep -q "name=\"vetcare-demo-api\" content=\"${DEMO_API_URL}\"" index.html \
+        || { echo "❌ Failed to inject DEMO_API_URL into index.html — meta tag pattern changed?"; exit 1; }; \
+      echo "✅ demo API → ${DEMO_API_URL}"; \
+    fi
+
 # ─────────────────────────────────────────────────────────────
 # Stage 2 — serve the built site with nginx
 # ─────────────────────────────────────────────────────────────
