@@ -376,16 +376,19 @@
               <div><div class="vc-demo-success-title">Готово — проверете имейла си</div><div class="vc-demo-success-text">Изпратихме ви линк за вход в демо акаунта. Демо средата се обновява ежедневно.</div></div>
             </div>
           </div>
-          <form x-show="!demoDone" @submit.prevent="submitDemo($event)" class="vc-demo-form">
+          <!-- novalidate: native browser validation bubbles are localized to the *browser's* UI
+               language, not lang="bg", so an empty field showed an English message. submitDemo()
+               already produces Bulgarian errors in .vc-demo-err — this hands validation to it. -->
+          <form x-show="!demoDone" @submit.prevent="submitDemo($event)" novalidate class="vc-demo-form">
             <div aria-hidden="true" class="vc-honeypot">
               <label>Оставете това поле празно<input type="text" tabindex="-1" autocomplete="off" x-model="demoHoney"></label>
             </div>
             <label for="vc-demo-email" class="vc-label vc-label--light">Имейл</label>
             <div class="vc-form-row">
-              <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" @input="demoErr = ''" class="vc-demo-input">
+              <input id="vc-demo-email" type="email" required placeholder="вашият имейл" x-model="demoEmail" x-ref="demoEmailInput" @input="demoErr = ''" :aria-invalid="demoErr ? 'true' : 'false'" aria-describedby="vc-demo-err" class="vc-demo-input">
               <button type="submit" :disabled="demoLoading" class="vc-form-btn vc-demo-btn"><span x-text="demoLoading ? 'Изпращане…' : 'Влез в демото'"></span><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
             </div>
-            <p x-show="demoErr" role="alert" style="display:none" class="vc-demo-err" x-text="demoErr"></p>
+            <p id="vc-demo-err" x-show="demoErr" role="alert" style="display:none" class="vc-demo-err" x-text="demoErr"></p>
             <p class="vc-demo-hint"><i class="ti ti-info-circle" aria-hidden="true"></i>Демо средата се обновява ежедневно. Поиграйте си — нищо не можете да счупите.</p>
           </form>
         </div>

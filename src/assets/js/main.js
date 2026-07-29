@@ -159,14 +159,26 @@ document.addEventListener('alpine:init', () => {
       e.preventDefault();
       if (this.demoLoading) return;
       if (this.demoHoney.trim()) { this.demoDone = true; return; }
-      if (!this.isEmailValid(this.demoEmail)) { this.demoErr = 'Моля, въведете валиден имейл адрес.'; return; }
+      // The form is novalidate (the native bubble isn't translatable), so empty and malformed are
+      // told apart here and the field is focused the way native validation used to do it.
+      const email = this.demoEmail.trim();
+      if (!email) {
+        this.demoErr = 'Моля, въведете имейл адрес.';
+        this.$refs.demoEmailInput?.focus();
+        return;
+      }
+      if (!this.isEmailValid(email)) {
+        this.demoErr = 'Моля, въведете валиден имейл адрес.';
+        this.$refs.demoEmailInput?.focus();
+        return;
+      }
       this.demoErr = '';
       this.demoLoading = true;
       try {
         const res = await fetch(VETCARE_DEMO_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: this.demoEmail.trim(), website: this.demoHoney }),
+          body: JSON.stringify({ email, website: this.demoHoney }),
         });
         if (res.ok) {
           this.demoDone = true;
