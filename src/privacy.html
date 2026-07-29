@@ -42,7 +42,7 @@
 </head>
 <body x-data="vetcare">
 
-<a class="vc-skip-link" href="#main-content">Прескочи към съдържанието</a>
+<a class="vc-skip-link" href="#main-content">Прескочете към съдържанието</a>
 
 <!-- HEADER -->
 <header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }">
@@ -61,7 +61,7 @@
       <a href="index.html#ceni" class="vc-nav-link">Цени</a>
       <a href="index.html#istoriya" class="vc-nav-link">История</a>
       <a href="index.html#kontakti" class="vc-nav-link">Контакти</a>
-      <a href="index.html#demo" class="vc-cta-btn">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+      <a href="index.html#demo" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
     </nav>
 
     <button @click="menuOpen = !menuOpen" aria-label="Меню" :aria-expanded="menuOpen.toString()" class="vc-hamburger">
@@ -75,7 +75,7 @@
     <a href="index.html#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
     <a href="index.html#istoriya" @click="menuOpen = false" class="vc-mobile-menu-link">История</a>
     <a href="index.html#kontakti" @click="menuOpen = false" class="vc-mobile-menu-link">Контакти</a>
-    <a href="index.html#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+    <a href="index.html#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
   </nav>
 </header>
 
@@ -102,7 +102,7 @@
         <p>Събираме два основни вида данни:</p>
         <ul>
           <li><strong>Данни от формите на сайта</strong> — при заявка за демо и при ранна покана: единствено имейл адрес; при контактната форма: имейл адрес, а по желание — и име и текст на съобщението. Тези данни се препращат чрез услугата <a href="https://web3forms.com" class="vc-legal-link" target="_blank" rel="noopener">Web3Forms</a> директно към нашата пощенска кутия <strong>hello@vetcare.bg</strong>.</li>
-          <li><strong>Аналитични данни чрез PostHog</strong> (EU регион) — <strong>единствено след изрично съгласие</strong> от ваша страна: посещения на страницата, автоматично прихванати взаимодействия и кликове (<code>autocapture</code>), дълбочина на скролване, отваряне на въпроси от ЧЗВ, събития при изпращане на форма, IP адрес и приблизителна локация, данни за устройство и браузър, както и записи на сесии (session recordings), при които всички полета за въвеждане са <strong>маскирани</strong> (<code>maskAllInputs</code>) — тоест съдържанието, което въвеждате в тях, не се записва.</li>
+          <li><strong>Аналитични данни чрез PostHog</strong> (EU регион) — <strong>единствено след изрично съгласие</strong> от ваша страна: посещения на страницата, автоматично прихванати взаимодействия и кликове (<code>autocapture</code>), дълбочина на скролване, отваряне на въпроси от секцията с често задавани въпроси, събития при изпращане на форма, IP адрес и приблизителна локация, данни за устройство и браузър, както и записи на сесии (session recordings), при които всички полета за въвеждане са <strong>маскирани</strong> (<code>maskAllInputs</code>) — тоест съдържанието, което въвеждате в тях, не се записва.</li>
         </ul>
 
         <h2>4. Цели и правно основание за обработка</h2>
@@ -185,14 +185,15 @@
         </nav>
         <nav class="vc-footer-nav" aria-label="Връзки">
           <span class="vc-footer-nav-heading">Връзка</span>
-          <a href="index.html#demo" class="vc-footer-nav-link">Пробвай демо</a>
+          <a href="index.html#demo" class="vc-footer-nav-link">Пробвайте демо</a>
           <a href="index.html#waitlist" class="vc-footer-nav-link">Ранна покана</a>
           <a href="index.html#kontakti" class="vc-footer-nav-link">Контакти</a>
           <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
         </nav>
       </div>
       <div class="vc-footer-bottom">
-        <span>© 2026 VetCare</span>
+        <!-- The literal year is the pre-hydration / no-JS fallback; Alpine overwrites it on init. -->
+        <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
         <span class="vc-footer-sep" aria-hidden="true">·</span>
         <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
         <span class="vc-footer-sep" aria-hidden="true">·</span>

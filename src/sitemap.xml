@@ -3,16 +3,16 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://vetcare.bg/</loc>
-    <lastmod>2026-07-01</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://vetcare.bg/assets/images/rex-kolaj.webp</image:loc>
-      <image:title>Rex — кучето, заради което създадохме VetCare</image:title>
+      <image:loc>https://vetcare.bg/assets/images/rex-kolaj.png</image:loc>
+      <image:title>Рекс — кучето, заради което създадохме VetCare</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://vetcare.bg/privacy.html</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <priority>0.3</priority>
   </url>
 </urlset>
