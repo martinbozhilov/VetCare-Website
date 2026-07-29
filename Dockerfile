@@ -12,6 +12,10 @@ RUN npm ci
 COPY src/ ./
 RUN npm run build
 
+RUN BUILD_ID=$(date +%s) && \
+    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html && \
+    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html
+
 # ─────────────────────────────────────────────────────────────
 # Stage 2 — serve the built site with nginx
 # ─────────────────────────────────────────────────────────────

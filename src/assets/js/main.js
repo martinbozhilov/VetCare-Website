@@ -21,7 +21,8 @@ function resolveDemoApi() {
   if (host === 'dev.vetcare.bg') {
     return 'https://dev.vetcare.bg/api/demo/request';
   }
-  return 'https://app.vetcare.bg/api/demo/request';
+  const prodPath = 'https://app.vetcare.bg/api/demo/request';
+  return prodPath;
 }
 const VETCARE_DEMO_API = resolveDemoApi();
 
