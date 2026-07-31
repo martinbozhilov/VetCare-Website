@@ -531,6 +531,44 @@ button { font-family: inherit; }
   .vc-form-row { flex-direction: row; }
 }
 
+.vc-waitlist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── hCaptcha ───────────────────────────────────────────── */
+/* The widget is a fixed 303x78 iframe injected into .h-captcha by web3forms/client/script.js.
+   min-height reserves the space up front so the form doesn't jump when it finishes rendering. */
+.vc-captcha {
+  display: flex;
+  min-height: 78px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* The invisible widget draws nothing inline — hCaptcha appends its challenge overlay to <body>, not
+   to this container. Taken out of flow rather than `display: none` so the element is still laid out
+   (hCaptcha renders into it) without adding a gap to the form's flex column. */
+.vc-captcha--invisible {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.vc-captcha-note {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-tertiary);
+  text-align: center;
+}
+.vc-captcha-note-link {
+  color: inherit;
+  text-decoration: underline;
+}
+
 /* ── Inputs ─────────────────────────────────────────────── */
 .vc-input {
   width: 100%;

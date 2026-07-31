@@ -29,8 +29,10 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css"></noscript>
+
+  <!-- Self-hosted icon subset — see the matching block in index.html for why it isn't deferred. -->
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/tabler-icons-subset.woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/icons.min.css">
 
   <link rel="preconnect" href="https://eu.i.posthog.com">
   <link rel="preconnect" href="https://eu-assets.i.posthog.com">
@@ -42,7 +44,7 @@
 </head>
 <body x-data="vetcare">
 
-<a class="vc-skip-link" href="#main-content">Прескочи към съдържанието</a>
+<a class="vc-skip-link" href="#main-content">Прескочете към съдържанието</a>
 
 <!-- HEADER -->
 <header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }">
@@ -61,7 +63,7 @@
       <a href="index.html#ceni" class="vc-nav-link">Цени</a>
       <a href="index.html#istoriya" class="vc-nav-link">История</a>
       <a href="index.html#kontakti" class="vc-nav-link">Контакти</a>
-      <a href="index.html#demo" class="vc-cta-btn">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+      <a href="index.html#demo" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
     </nav>
 
     <button @click="menuOpen = !menuOpen" aria-label="Меню" :aria-expanded="menuOpen.toString()" class="vc-hamburger">
@@ -75,7 +77,7 @@
     <a href="index.html#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
     <a href="index.html#istoriya" @click="menuOpen = false" class="vc-mobile-menu-link">История</a>
     <a href="index.html#kontakti" @click="menuOpen = false" class="vc-mobile-menu-link">Контакти</a>
-    <a href="index.html#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвай демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+    <a href="index.html#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
   </nav>
 </header>
 
@@ -87,7 +89,7 @@
 
       <span class="vc-section-label">Правна информация</span>
       <h1 class="vc-legal-title">Политика за поверителност и бисквитки</h1>
-      <p class="vc-legal-meta">Последна актуализация: <strong>9 юли 2026 г.</strong> · Контакт: <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a></p>
+      <p class="vc-legal-meta">Последна актуализация: <strong>31 юли 2026 г.</strong> · Контакт: <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a></p>
 
       <div class="vc-legal-prose">
 
@@ -102,7 +104,7 @@
         <p>Събираме два основни вида данни:</p>
         <ul>
           <li><strong>Данни от формите на сайта</strong> — при заявка за демо и при ранна покана: единствено имейл адрес; при контактната форма: имейл адрес, а по желание — и име и текст на съобщението. Тези данни се препращат чрез услугата <a href="https://web3forms.com" class="vc-legal-link" target="_blank" rel="noopener">Web3Forms</a> директно към нашата пощенска кутия <strong>hello@vetcare.bg</strong>.</li>
-          <li><strong>Аналитични данни чрез PostHog</strong> (EU регион) — <strong>единствено след изрично съгласие</strong> от ваша страна: посещения на страницата, автоматично прихванати взаимодействия и кликове (<code>autocapture</code>), дълбочина на скролване, отваряне на въпроси от ЧЗВ, събития при изпращане на форма, IP адрес и приблизителна локация, данни за устройство и браузър, както и записи на сесии (session recordings), при които всички полета за въвеждане са <strong>маскирани</strong> (<code>maskAllInputs</code>) — тоест съдържанието, което въвеждате в тях, не се записва.</li>
+          <li><strong>Аналитични данни чрез PostHog</strong> (EU регион) — <strong>единствено след изрично съгласие</strong> от ваша страна: посещения на страницата, автоматично прихванати взаимодействия и кликове (<code>autocapture</code>), дълбочина на скролване, отваряне на въпроси от секцията с често задавани въпроси, събития при изпращане на форма, IP адрес и приблизителна локация, данни за устройство и браузър, както и записи на сесии (session recordings), при които всички полета за въвеждане са <strong>маскирани</strong> (<code>maskAllInputs</code>) — тоест съдържанието, което въвеждате в тях, не се записва.</li>
         </ul>
 
         <h2>4. Цели и правно основание за обработка</h2>
@@ -118,11 +120,12 @@
         <ul>
           <li><strong>Web3Forms</strong> — препраща съдържанието на попълнените форми към нашия имейл, действайки като обработващ лични данни от наше име.</li>
           <li><strong>PostHog</strong> (EU хостинг) — доставчик на аналитика, действащ като обработващ лични данни, използван само след ваше съгласие.</li>
+          <li><strong>hCaptcha</strong> (Intuition Machines, Inc.) — защита на формите от автоматизиран спам. При изпращане на форма обработва вашия IP адрес, данни за браузъра и устройството и взаимодействието ви със страницата, за да прецени дали сте човек. Това е строго необходимо за сигурността на услугата и работи независимо от избора ви за аналитични бисквитки. Вижте <a href="https://www.hcaptcha.com/privacy" class="vc-legal-link" target="_blank" rel="noopener">Политиката за поверителност</a> и <a href="https://www.hcaptcha.com/terms" class="vc-legal-link" target="_blank" rel="noopener">Общите условия</a> на hCaptcha.</li>
         </ul>
         <p>Не продаваме и не споделяме личните ви данни с трети страни за рекламни цели.</p>
 
         <h2>7. Международен трансфер на данни</h2>
-        <p>Данните, обработвани чрез PostHog, се съхраняват в инфраструктура на територията на Европейския съюз (EU регион). Услугата Web3Forms обаче е установена извън ЕС (САЩ), поради което данните, изпратени чрез формите на сайта, може да бъдат обработвани извън Европейското икономическо пространство. В тези случаи трансферът се извършва при подходящи гаранции, като Стандартни договорни клаузи на Европейската комисия.</p>
+        <p>Данните, обработвани чрез PostHog, се съхраняват в инфраструктура на територията на Европейския съюз (EU регион). Услугите Web3Forms и hCaptcha обаче са установени извън ЕС (САЩ), поради което данните, изпратени чрез формите на сайта, може да бъдат обработвани извън Европейското икономическо пространство. В тези случаи трансферът се извършва при подходящи гаранции, като Стандартни договорни клаузи на Европейската комисия.</p>
 
         <h2>8. Срокове за съхранение</h2>
         <ul>
@@ -174,7 +177,7 @@
             <img src="assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
             <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
           </div>
-          <p class="vc-footer-tagline">Модерен, грижовен софтуер за ветеринарни клиники. Основното — безплатно, завинаги.</p>
+          <p class="vc-footer-tagline">Софтуер за ветеринарни клиники. Основните функции остават безплатни.</p>
         </div>
         <nav class="vc-footer-nav" aria-label="Навигация">
           <span class="vc-footer-nav-heading">Навигация</span>
@@ -185,14 +188,15 @@
         </nav>
         <nav class="vc-footer-nav" aria-label="Връзки">
           <span class="vc-footer-nav-heading">Връзка</span>
-          <a href="index.html#demo" class="vc-footer-nav-link">Пробвай демо</a>
+          <a href="index.html#demo" class="vc-footer-nav-link">Пробвайте демо</a>
           <a href="index.html#waitlist" class="vc-footer-nav-link">Ранна покана</a>
           <a href="index.html#kontakti" class="vc-footer-nav-link">Контакти</a>
           <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
         </nav>
       </div>
       <div class="vc-footer-bottom">
-        <span>© 2026 VetCare</span>
+        <!-- The literal year is the pre-hydration / no-JS fallback; Alpine overwrites it on init. -->
+        <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
         <span class="vc-footer-sep" aria-hidden="true">·</span>
         <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
         <span class="vc-footer-sep" aria-hidden="true">·</span>

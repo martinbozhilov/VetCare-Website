@@ -14,7 +14,8 @@ RUN npm run build
 
 RUN BUILD_ID=$(date +%s) && \
     sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html && \
-    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html
+    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html && \
+    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" index.html
 
 # Demo-provisioning endpoint, baked into the <meta name="vetcare-demo-api"> tag that
 # resolveDemoApi() in main.js reads first. The site is static (no runtime env), so this is

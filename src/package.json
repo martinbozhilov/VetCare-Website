@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css",
+    "icons": "node scripts/subset-icons.js",
+    "build": "npm run icons && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
     "watch": "node scripts/watch.js",
     "serve": "npx serve -l 8001"
   },
@@ -13,7 +14,11 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@tabler/icons-webfont": "^3.14.0",
     "esbuild": "^0.28.1",
-    "sharp": "^0.35.3"
+    "fontverter": "^2.0.0",
+    "opentype.js": "^2.0.0",
+    "sharp": "^0.35.3",
+    "subset-font": "^2.5.0"
   }
 }
