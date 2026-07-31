@@ -62,6 +62,63 @@ function loadPostHog() {
   return posthogLoadPromise;
 }
 
+// ── hCaptcha ────────────────────────────────────────────────────────────────────────────────────
+// web3forms/client/script.js does NOT render the widgets itself: it stamps its own free-plan
+// sitekey onto every [data-captcha="true"] element and injects hCaptcha's api.js, forwarding the
+// data-lang / data-render / data-onload attributes as ?hl / ?render / ?onload. We ask it for
+// `render=explicit` + `onload=vcCaptchaReady` so the widgets are created here instead of by
+// hCaptcha's auto-render. That's what makes the two forms independently controllable:
+// hcaptcha.render() hands back a widget id, whereas auto-rendered widgets leave us guessing, and a
+// bare hcaptcha.reset()/execute() would act on the *first* widget on the page — the other form's.
+//
+// The contact form uses a normal checkbox widget; the waitlist is invisible (a captcha box under a
+// single email field costs more conversions than it's worth), so its challenge is triggered from
+// submitWait via hcaptcha.execute() and only actually shows a puzzle when hCaptcha wants one.
+const VETCARE_CAPTCHA = {
+  // Fallback only — web3forms/client/script.js sets data-sitekey on each container before api.js
+  // loads, and that value wins so a key rotation on their side doesn't need a change here.
+  sitekey: '50b2fe65-b00b-4b9e-ad62-3ba471098be2',
+  widgets: { contact: null, wait: null }, // hCaptcha widget ids, filled in by vcCaptchaReady
+};
+
+// Named on window because it's what ?onload= in hCaptcha's api.js URL resolves against. Declared at
+// module scope (not inside alpine:init) so it exists before api.js finishes loading.
+window.vcCaptchaReady = function vcCaptchaReady() {
+  for (const [name, opts] of [['contact', {}], ['wait', { size: 'invisible' }]]) {
+    const el = document.querySelector(`[data-vc-captcha="${name}"]`);
+    if (!el) continue;
+    VETCARE_CAPTCHA.widgets[name] = window.hcaptcha.render(el, {
+      sitekey: el.dataset.sitekey || VETCARE_CAPTCHA.sitekey,
+      ...opts,
+    });
+  }
+};
+
+const captchaReady = (name) => VETCARE_CAPTCHA.widgets[name] !== null && !!window.hcaptcha;
+
+// Returns the token for a form, or '' if the user hasn't satisfied the captcha. For the invisible
+// widget this opens the challenge and waits; for the checkbox one it just reads what's already
+// there. Web3Forms verifies the token only if it travels in the payload — the plain-HTML POST gets
+// it for free from the form encoding, but this site submits JSON and has to send it explicitly.
+async function captchaToken(name) {
+  const id = VETCARE_CAPTCHA.widgets[name];
+  if (name !== 'wait') return window.hcaptcha.getResponse(id) || '';
+  try {
+    const { response } = await window.hcaptcha.execute(id, { async: true });
+    return response || '';
+  } catch {
+    // Thrown when the user closes or fails the challenge — not an error worth its own message.
+    return '';
+  }
+}
+
+// A token is single-use, so a submission that failed after Web3Forms saw it leaves the widget
+// holding a spent token; reset it or the retry fails too.
+function resetCaptcha(name) {
+  const id = VETCARE_CAPTCHA.widgets[name];
+  if (id !== null && window.hcaptcha) window.hcaptcha.reset(id);
+}
+
 async function sendToWeb3Forms(fields) {
   const res = await fetch(VETCARE_CONTACT.web3formsEndpoint, {
     method: 'POST',
@@ -199,15 +256,44 @@ document.addEventListener('alpine:init', () => {
     async submitWait(e) {
       e.preventDefault();
       if (this.waitLoading) return;
-      if (!this.isEmailValid(this.waitEmail)) { this.waitErr = 'Моля, въведете валиден имейл адрес.'; return; }
+      // novalidate form (see index.html) — empty and malformed are told apart here so the message
+      // is Bulgarian, and the field is focused the way native validation used to do it.
+      const email = this.waitEmail.trim();
+      if (!email) {
+        this.waitErr = 'Моля, въведете имейл адрес.';
+        this.$refs.waitEmailInput?.focus();
+        return;
+      }
+      if (!this.isEmailValid(email)) {
+        this.waitErr = 'Моля, въведете валиден имейл адрес.';
+        this.$refs.waitEmailInput?.focus();
+        return;
+      }
+      if (!captchaReady('wait')) {
+        this.waitErr = `Проверката „не съм робот“ не се зареди. Презаредете страницата или ни пишете на ${VETCARE_CONTACT.toEmail}.`;
+        return;
+      }
       this.waitErr = '';
+      // The invisible widget may open a challenge here, so show the loading state around it too —
+      // otherwise the button looks idle while hCaptcha's overlay is up.
       this.waitLoading = true;
       try {
-        await sendToWeb3Forms({ subject: 'Ранна покана – VetCare', form_name: 'Ранна покана', email: this.waitEmail });
+        const token = await captchaToken('wait');
+        if (!token) {
+          this.waitErr = 'Моля, потвърдете, че не сте робот.';
+          return;
+        }
+        await sendToWeb3Forms({
+          subject: 'Ранна покана – VetCare',
+          form_name: 'Ранна покана',
+          email,
+          'h-captcha-response': token,
+        });
         this.waitDone = true;
         this.track('waitlist_submitted');
       } catch {
         this.waitErr = `Възникна грешка. Моля, опитайте отново или пишете ни на ${VETCARE_CONTACT.toEmail}.`;
+        resetCaptcha('wait');
       } finally {
         this.waitLoading = false;
       }
@@ -216,12 +302,34 @@ document.addEventListener('alpine:init', () => {
       e.preventDefault();
       if (this.contactLoading) return;
       if (this.contactHoney.trim()) { this.contactDone = true; return; }
-      if (!this.isEmailValid(this.contactEmail)) {
-        this.contactErr = 'Моля, въведете валиден имейл адрес.';
+      // novalidate form (see index.html) — empty and malformed are told apart here so the messages
+      // are Bulgarian, and the offending field is focused the way native validation used to do it.
+      const email = this.contactEmail.trim();
+      const message = this.contactMessage.trim();
+      if (!email) {
+        this.contactErr = 'Моля, въведете имейл адрес.';
+        this.$refs.contactEmailInput?.focus();
         return;
       }
-      if (!this.contactMessage.trim()) {
+      if (!this.isEmailValid(email)) {
+        this.contactErr = 'Моля, въведете валиден имейл адрес.';
+        this.$refs.contactEmailInput?.focus();
+        return;
+      }
+      if (!message) {
         this.contactErr = 'Моля, напишете съобщение.';
+        this.$refs.contactMsgInput?.focus();
+        return;
+      }
+      // Captcha last: the token is single-use, so checking it before the fields would make a user
+      // with a typo'd email solve the puzzle twice.
+      if (!captchaReady('contact')) {
+        this.contactErr = `Проверката „не съм робот“ не се зареди. Презаредете страницата или ни пишете на ${VETCARE_CONTACT.toEmail}.`;
+        return;
+      }
+      const token = await captchaToken('contact');
+      if (!token) {
+        this.contactErr = 'Моля, потвърдете, че не сте робот.';
         return;
       }
       this.contactErr = '';
@@ -231,13 +339,15 @@ document.addEventListener('alpine:init', () => {
           subject: 'Съобщение от контакти – VetCare',
           form_name: 'Контактна форма',
           name: this.contactName,
-          email: this.contactEmail,
-          message: this.contactMessage,
+          email,
+          message,
+          'h-captcha-response': token,
         });
         this.contactDone = true;
         this.track('contact_submitted');
       } catch {
         this.contactErr = `Възникна грешка. Моля, опитайте отново или пишете ни на ${VETCARE_CONTACT.toEmail}.`;
+        resetCaptcha('contact');
       } finally {
         this.contactLoading = false;
       }

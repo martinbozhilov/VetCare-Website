@@ -29,8 +29,10 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css"></noscript>
+
+  <!-- Self-hosted icon subset — see the matching block in index.html for why it isn't deferred. -->
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/tabler-icons-subset.woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/icons.min.css">
 
   <link rel="preconnect" href="https://eu.i.posthog.com">
   <link rel="preconnect" href="https://eu-assets.i.posthog.com">
@@ -87,7 +89,7 @@
 
       <span class="vc-section-label">Правна информация</span>
       <h1 class="vc-legal-title">Политика за поверителност и бисквитки</h1>
-      <p class="vc-legal-meta">Последна актуализация: <strong>9 юли 2026 г.</strong> · Контакт: <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a></p>
+      <p class="vc-legal-meta">Последна актуализация: <strong>31 юли 2026 г.</strong> · Контакт: <a href="mailto:hello@vetcare.bg" class="vc-legal-link">hello@vetcare.bg</a></p>
 
       <div class="vc-legal-prose">
 
@@ -118,11 +120,12 @@
         <ul>
           <li><strong>Web3Forms</strong> — препраща съдържанието на попълнените форми към нашия имейл, действайки като обработващ лични данни от наше име.</li>
           <li><strong>PostHog</strong> (EU хостинг) — доставчик на аналитика, действащ като обработващ лични данни, използван само след ваше съгласие.</li>
+          <li><strong>hCaptcha</strong> (Intuition Machines, Inc.) — защита на формите от автоматизиран спам. При изпращане на форма обработва вашия IP адрес, данни за браузъра и устройството и взаимодействието ви със страницата, за да прецени дали сте човек. Това е строго необходимо за сигурността на услугата и работи независимо от избора ви за аналитични бисквитки. Вижте <a href="https://www.hcaptcha.com/privacy" class="vc-legal-link" target="_blank" rel="noopener">Политиката за поверителност</a> и <a href="https://www.hcaptcha.com/terms" class="vc-legal-link" target="_blank" rel="noopener">Общите условия</a> на hCaptcha.</li>
         </ul>
         <p>Не продаваме и не споделяме личните ви данни с трети страни за рекламни цели.</p>
 
         <h2>7. Международен трансфер на данни</h2>
-        <p>Данните, обработвани чрез PostHog, се съхраняват в инфраструктура на територията на Европейския съюз (EU регион). Услугата Web3Forms обаче е установена извън ЕС (САЩ), поради което данните, изпратени чрез формите на сайта, може да бъдат обработвани извън Европейското икономическо пространство. В тези случаи трансферът се извършва при подходящи гаранции, като Стандартни договорни клаузи на Европейската комисия.</p>
+        <p>Данните, обработвани чрез PostHog, се съхраняват в инфраструктура на територията на Европейския съюз (EU регион). Услугите Web3Forms и hCaptcha обаче са установени извън ЕС (САЩ), поради което данните, изпратени чрез формите на сайта, може да бъдат обработвани извън Европейското икономическо пространство. В тези случаи трансферът се извършва при подходящи гаранции, като Стандартни договорни клаузи на Европейската комисия.</p>
 
         <h2>8. Срокове за съхранение</h2>
         <ul>
@@ -174,7 +177,7 @@
             <img src="assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
             <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
           </div>
-          <p class="vc-footer-tagline">Модерен, грижовен софтуер за ветеринарни клиники. Основното — безплатно, завинаги.</p>
+          <p class="vc-footer-tagline">Софтуер за ветеринарни клиники. Основните функции остават безплатни.</p>
         </div>
         <nav class="vc-footer-nav" aria-label="Навигация">
           <span class="vc-footer-nav-heading">Навигация</span>
