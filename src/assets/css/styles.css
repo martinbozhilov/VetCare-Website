@@ -24,6 +24,13 @@
   --accent:      var(--color-secondary);
   --accent-dark: var(--color-tertiary);
   --accent-soft: var(--color-mist);
+
+  /* Sticky-header geometry. Anything that has to clear the header (scroll-padding, the mobile
+     menu's max-height) derives from these instead of repeating the number. */
+  --vc-header-h: 72px;
+  --vc-crumb-h:  34px;
+  /* Bottom inset for the fixed elements — the iPhone home indicator sits in this strip. */
+  --vc-bottom-safe: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Reset + base ───────────────────────────────────────── */
@@ -31,8 +38,15 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 84px;
+  /* The orientation strip is part of the sticky header on phones, so anchors have to clear both. */
+  scroll-padding-top: calc(var(--vc-header-h) + var(--vc-crumb-h) + 12px);
 }
+@media (min-width: 900px) {
+  html { scroll-padding-top: calc(var(--vc-header-h) + 12px); }
+}
+
+/* Set while the mobile menu is open — scrolling the page behind an overlay loses your place. */
+html.vc-no-scroll { overflow: hidden; }
 
 body {
   margin: 0;
@@ -60,7 +74,11 @@ button { font-family: inherit; }
   to { opacity: 1; transform: translateY(0); }
 }
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; scroll-behavior: auto !important; }
+  * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ── Focus ──────────────────────────────────────────────── */
@@ -169,10 +187,33 @@ button { font-family: inherit; }
 }
 
 .vc-nav-link {
+  position: relative;
+  padding: 8px 2px;
   font-size: 15px;
   font-weight: 500;
   color: var(--color-tertiary);
   text-decoration: none;
+  transition: color 0.2s ease;
+}
+/* Active marker as ::after, not a border or a weight change: the link's own box never changes
+   size, so the nav can't shift sideways while you scroll past a section boundary. */
+.vc-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.24s ease;
+}
+.vc-nav-link.is-active {
+  color: var(--color-primary);
+}
+.vc-nav-link.is-active::after {
+  transform: scaleX(1);
 }
 
 .vc-cta-btn {
@@ -193,8 +234,8 @@ button { font-family: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--color-mist);
   background: #fff;
   border-radius: 11px;
@@ -205,13 +246,67 @@ button { font-family: inherit; }
   .vc-hamburger { display: none; }
 }
 
+/* ── Orientation strip (mobile) ─────────────────────────── */
+/* On phones the nav is behind the hamburger, so the active-link highlight has nothing to show.
+   This strip is the mobile answer to "where am I": section name, position in the page, and a
+   progress rule along the bottom edge. Desktop keeps the nav highlight instead — one indicator,
+   not two. */
+.vc-crumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--vc-crumb-h);
+  padding: 0 clamp(18px, 5vw, 40px);
+  border-top: 1px solid var(--color-mist);
+  font-size: 12.5px;
+}
+.vc-crumb-label {
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vc-crumb-count {
+  margin-left: auto;
+  flex: none;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-tertiary);
+}
+.vc-crumb-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-mist);
+}
+.vc-crumb-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.12s linear;
+}
+@media (min-width: 900px) {
+  .vc-crumb { display: none !important; }
+}
+
 .vc-mobile-menu {
   border-top: 1px solid var(--color-mist);
   background: #fff;
-  padding: 10px clamp(18px, 5vw, 40px) 18px;
+  padding: 10px clamp(18px, 5vw, 40px) calc(18px + var(--vc-bottom-safe));
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* A phone in landscape has ~300px of height to give — the menu scrolls rather than overflowing
+     under the fold. */
+  max-height: calc(100dvh - var(--vc-header-h));
+  overflow-y: auto;
 }
 .vc-mobile-menu-link {
   padding: 13px 6px;
@@ -220,6 +315,12 @@ button { font-family: inherit; }
   color: var(--color-primary);
   text-decoration: none;
   border-bottom: 1px solid var(--color-mist);
+}
+/* inset shadow rather than border-left: no reflow when the active item changes. */
+.vc-mobile-menu-link.is-active {
+  color: var(--accent-dark);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .vc-mobile-cta {
   margin-top: 8px;
@@ -732,11 +833,14 @@ button { font-family: inherit; }
 }
 
 /* ── Sticky mobile CTA ──────────────────────────────────── */
+/* Visibility is decided in main.js (showStickyCta): only while the reader is scrolling back up,
+   and never over a section that already offers the next step. Resting state is off screen, so the
+   bar costs nothing while the page is being read downward. */
 .vc-sticky-cta {
   position: fixed;
   left: 14px;
   right: 14px;
-  bottom: 14px;
+  bottom: calc(14px + var(--vc-bottom-safe));
   z-index: 40;
   display: flex;
   align-items: center;
@@ -750,9 +854,68 @@ button { font-family: inherit; }
   border-radius: 13px;
   text-decoration: none;
   box-shadow: 0 14px 30px -10px rgba(11, 47, 57, 0.55);
+  /* Slid out and inert until main.js adds --in. visibility does the accessibility work display:none
+     used to do (out of the tab order, ignored by screen readers) while keeping the element laid out
+     so it has somewhere to slide from; it flips only after the slide finishes, hence the delay.
+     The offset clears the shadow as well as the box. */
+  translate: 0 calc(100% + 34px);
+  opacity: 0;
+  visibility: hidden;
+  /* Declared here, not in the Interaction states block, because it has to cover the reveal as well
+     as the press feedback — that block's shared transition list comes later in the file and would
+     otherwise replace this one wholesale. `translate` rather than `transform` for the same reason:
+     it composes with the :active transform instead of fighting it. */
+  transition: translate 0.24s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.18s ease,
+              visibility 0s linear 0.24s,
+              background 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
+}
+.vc-sticky-cta--in {
+  translate: 0 0;
+  opacity: 1;
+  visibility: visible;
+  transition: translate 0.24s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.18s ease,
+              visibility 0s linear 0s,
+              background 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
 }
 @media (min-width: 900px) {
   .vc-sticky-cta { display: none; }
+}
+/* No footer padding reservation: the bar is suppressed while #kontakti is on screen, and the only
+   way to reach the footer with the bar showing would be to scroll up past the whole contact
+   section without bringing it back into view. */
+
+/* ── Back to top ────────────────────────────────────────── */
+.vc-to-top {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + var(--vc-bottom-safe));
+  z-index: 45;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-mist);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent-dark);
+  cursor: pointer;
+  box-shadow: 0 12px 28px -14px rgba(11, 47, 57, 0.55);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+              transform 0.2s ease, translate 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.vc-to-top i { font-size: 22px; }
+/* Sits above the sticky bar instead of on top of it, and rides up with it rather than jumping —
+   `translate` animates on the compositor and, unlike overriding `bottom`, leaves the :active
+   transform free to do the press feedback. 68px is the bar's height plus its own bottom offset.
+   Phones only: the bar doesn't exist above 900px, so the button stays in the corner there. */
+@media (max-width: 899px) {
+  .vc-to-top--raised { translate: 0 -68px; }
+}
+@media (min-width: 900px) {
+  .vc-to-top { right: 24px; bottom: 24px; }
 }
 
 /* ── Refactored utilities ───────────────────────────────── */
@@ -1325,12 +1488,137 @@ button { font-family: inherit; }
 .vc-footer-logo-text { display: flex; flex-direction: column; line-height: 1; }
 .vc-footer-tagline { margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-light-teal); max-width: 300px; }
 
+/* ── Interaction states ─────────────────────────────────── */
+/* Nothing on this page used to react to a pointer. Two rules of thumb here:
+   – hover is wrapped in (hover: hover) so a tap on a phone doesn't leave a link stuck in its
+     hover colour until you tap elsewhere;
+   – :active is NOT wrapped, because that's the press feedback touch relies on. */
+
+.vc-cta-btn,
+.vc-hero-primary-btn,
+.vc-hero-secondary-btn,
+.vc-form-btn,
+.vc-mobile-cta,
+/* .vc-sticky-cta is absent on purpose — it declares its own transition in the Sticky mobile CTA
+   block, covering the reveal slide as well as these press/hover properties. */
+.vc-consent-btn,
+.vc-hamburger,
+.vc-faq-btn,
+.vc-contact-email-link,
+.vc-problem-card,
+.vc-benefit-card,
+.vc-pricing-card,
+.vc-faq-item,
+.vc-footer-nav-link,
+.vc-footer-legal-link,
+.vc-footer-cookie-btn,
+.vc-consent-link {
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+              box-shadow 0.2s ease, transform 0.12s ease;
+}
+
+/* Only where a :active state below replaces it — a plain text link keeps the browser's own tap
+   highlight, which is the only feedback it has. */
+.vc-cta-btn,
+.vc-hero-primary-btn,
+.vc-hero-secondary-btn,
+.vc-form-btn,
+.vc-mobile-cta,
+.vc-sticky-cta,
+.vc-consent-btn,
+.vc-hamburger,
+.vc-faq-btn,
+.vc-step-btn,
+.vc-to-top,
+.vc-contact-email-link {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Solid teal buttons deepen; the shadow grows with them. */
+  .vc-cta-btn:hover,
+  .vc-hero-primary-btn:hover,
+  .vc-form-btn:hover:not(:disabled),
+  .vc-mobile-cta:hover,
+  .vc-sticky-cta:hover,
+  .vc-consent-btn:hover {
+    background: var(--accent-dark);
+  }
+  .vc-cta-btn:hover { box-shadow: 0 10px 22px -8px rgba(19, 77, 90, 0.75); }
+  .vc-hero-primary-btn:hover { box-shadow: 0 18px 34px -12px rgba(19, 77, 90, 0.8); }
+
+  /* The demo section sits on --color-primary, so its button lightens instead: darkening it there
+     would sink it into the background. */
+  .vc-form-btn.vc-demo-btn:hover:not(:disabled) { background: var(--color-soft-teal); }
+
+  /* Outlined / white surfaces. */
+  .vc-hero-secondary-btn:hover,
+  .vc-hamburger:hover,
+  .vc-consent-btn--decline:hover,
+  .vc-contact-email-link:hover,
+  .vc-to-top:hover {
+    background: var(--color-offwhite);
+    border-color: var(--color-pale-aqua);
+  }
+  .vc-to-top:hover { color: var(--accent); }
+
+  /* Cards: the border picks up the brand teal. No scaling — they sit in a grid and the movement
+     is louder than the information it carries. */
+  .vc-problem-card:hover,
+  .vc-benefit-card:hover,
+  .vc-pricing-card:hover,
+  .vc-faq-item:hover {
+    border-color: var(--color-pale-aqua);
+    box-shadow: 0 18px 36px -28px rgba(11, 47, 57, 0.45);
+  }
+
+  /* Rows that behave like controls. */
+  .vc-faq-btn:hover { background: var(--color-offwhite); }
+  .vc-step-btn:not(.active):hover { background: rgba(255, 255, 255, 0.6); }
+
+  .vc-nav-link:hover { color: var(--color-primary); }
+  /* :not(.is-active) so hovering the current link doesn't fade its own marker — same specificity
+     as the .is-active rule, and this one comes later. */
+  .vc-nav-link:not(.is-active):hover::after { transform: scaleX(1); opacity: 0.45; }
+  .vc-mobile-menu-link:hover { color: var(--accent-dark); }
+
+  .vc-footer-nav-link:hover,
+  .vc-footer-legal-link:hover,
+  .vc-footer-cookie-btn:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+  .vc-legal-link:hover,
+  .vc-consent-link:hover,
+  .vc-captcha-note-link:hover { color: var(--accent-dark); }
+}
+
+/* Press feedback — touch and mouse alike. */
+.vc-cta-btn:active,
+.vc-hero-primary-btn:active,
+.vc-hero-secondary-btn:active,
+.vc-form-btn:active:not(:disabled),
+.vc-mobile-cta:active,
+.vc-sticky-cta:active,
+.vc-consent-btn:active,
+.vc-hamburger:active,
+.vc-to-top:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px -6px rgba(11, 47, 57, 0.6);
+}
+.vc-faq-btn:active,
+.vc-step-btn:active,
+.vc-mobile-menu-link:active,
+.vc-contact-email-link:active {
+  background: var(--color-mist);
+}
+
 /* ── Cookie consent ─────────────────────────────────────── */
 .vc-consent {
   position: fixed;
   left: 16px;
   right: 16px;
-  bottom: 16px;
+  bottom: calc(16px + var(--vc-bottom-safe));
   z-index: 60;
   max-width: 640px;
   margin: 0 auto;
@@ -1377,7 +1665,7 @@ button { font-family: inherit; }
   .vc-consent {
     left: 12px;
     right: 12px;
-    bottom: 12px;
+    bottom: calc(12px + var(--vc-bottom-safe));
     padding: 16px;
   }
   .vc-consent-actions {

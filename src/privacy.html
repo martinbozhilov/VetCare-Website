@@ -47,7 +47,8 @@
 <a class="vc-skip-link" href="#main-content">Прескочете към съдържанието</a>
 
 <!-- HEADER -->
-<header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }">
+<header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }"
+  @click.outside="menuOpen = false" @keydown.escape.window="menuOpen = false">
   <div class="vc-header-inner">
     <a href="index.html" class="vc-logo">
       <img src="assets/images/rex-icon.svg" alt="VetCare лого — дигиталният Рекс" width="34" height="38">
@@ -66,12 +67,14 @@
       <a href="index.html#demo" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
     </nav>
 
-    <button @click="menuOpen = !menuOpen" aria-label="Меню" :aria-expanded="menuOpen.toString()" class="vc-hamburger">
+    <button @click="menuOpen = !menuOpen" :aria-label="menuOpen ? 'Затворете менюто' : 'Отворете менюто'"
+      :aria-expanded="menuOpen.toString()" aria-controls="vc-mobile-menu" class="vc-hamburger">
       <i :class="menuOpen ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
     </button>
   </div>
 
-  <nav x-show="menuOpen" class="vc-mobile-menu" aria-label="Мобилна навигация" style="display:none">
+  <nav x-show="menuOpen" x-transition.opacity.duration.200ms id="vc-mobile-menu" class="vc-mobile-menu"
+    aria-label="Мобилна навигация" style="display:none">
     <a href="index.html#kak-raboti" @click="menuOpen = false" class="vc-mobile-menu-link">Как работи</a>
     <a href="index.html#polzi" @click="menuOpen = false" class="vc-mobile-menu-link">Ползи</a>
     <a href="index.html#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
@@ -81,7 +84,7 @@
   </nav>
 </header>
 
-<main id="main-content">
+<main id="main-content" tabindex="-1">
 
   <!-- LEGAL / PRIVACY -->
   <section class="vc-legal-section">
@@ -206,6 +209,11 @@
   </footer>
 
 </main>
+
+<button type="button" x-show="scrollProgress > 0.15 && !showConsent" x-transition.opacity.duration.200ms
+  style="display:none" @click="scrollToTop()" class="vc-to-top" aria-label="Обратно към началото">
+  <i class="ti ti-arrow-up" aria-hidden="true"></i>
+</button>
 
 <div x-show="showConsent" style="display:none" class="vc-consent" role="dialog" aria-live="polite" aria-label="Съгласие за бисквитки">
   <p class="vc-consent-text">

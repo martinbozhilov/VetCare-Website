@@ -94,7 +94,10 @@
   <a class="vc-skip-link" href="#main-content">Прескочете към съдържанието</a>
 
   <!-- HEADER -->
-  <header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }">
+  <!-- The outside-click and Escape handlers live on the header, not on the menu itself: the menu is
+       hidden when closed, and a handler on a hidden element fights the hamburger's own toggle. -->
+  <header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }"
+    @click.outside="menuOpen = false" @keydown.escape.window="menuOpen = false">
     <div class="vc-header-inner">
       <a href="#top" @click="menuOpen = false" class="vc-logo">
         <img src="assets/images/rex-icon.svg" alt="VetCare лого — дигиталният Рекс" width="34" height="38">
@@ -105,31 +108,56 @@
       </a>
 
       <nav class="vc-nav-desktop" aria-label="Главна навигация">
-        <a href="#kak-raboti" class="vc-nav-link">Как работи</a>
-        <a href="#polzi" class="vc-nav-link">Ползи</a>
-        <a href="#ceni" class="vc-nav-link">Цени</a>
-        <a href="#istoriya" class="vc-nav-link">История</a>
-        <a href="#kontakti" class="vc-nav-link">Контакти</a>
-        <a href="#demo" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+        <a href="#kak-raboti" @click="goTo('kak-raboti')" :class="{ 'is-active': isActive('kak-raboti') }"
+          :aria-current="isActive('kak-raboti') ? 'true' : null" class="vc-nav-link">Как работи</a>
+        <a href="#polzi" @click="goTo('polzi')" :class="{ 'is-active': isActive('polzi') }"
+          :aria-current="isActive('polzi') ? 'true' : null" class="vc-nav-link">Ползи</a>
+        <a href="#ceni" @click="goTo('ceni')" :class="{ 'is-active': isActive('ceni') }"
+          :aria-current="isActive('ceni') ? 'true' : null" class="vc-nav-link">Цени</a>
+        <a href="#istoriya" @click="goTo('istoriya')" :class="{ 'is-active': isActive('istoriya') }"
+          :aria-current="isActive('istoriya') ? 'true' : null" class="vc-nav-link">История</a>
+        <a href="#kontakti" @click="goTo('kontakti')" :class="{ 'is-active': isActive('kontakti') }"
+          :aria-current="isActive('kontakti') ? 'true' : null" class="vc-nav-link">Контакти</a>
+        <a href="#demo" @click="goTo('demo')" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right"
+            aria-hidden="true"></i></a>
       </nav>
 
-      <button @click="menuOpen = !menuOpen" aria-label="Меню" :aria-expanded="menuOpen.toString()" class="vc-hamburger">
+      <button @click="menuOpen = !menuOpen" :aria-label="menuOpen ? 'Затворете менюто' : 'Отворете менюто'"
+        :aria-expanded="menuOpen.toString()" aria-controls="vc-mobile-menu" class="vc-hamburger">
         <i :class="menuOpen ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
       </button>
     </div>
 
-    <nav x-show="menuOpen" class="vc-mobile-menu" aria-label="Мобилна навигация" style="display:none">
-      <a href="#kak-raboti" @click="menuOpen = false" class="vc-mobile-menu-link">Как работи</a>
-      <a href="#polzi" @click="menuOpen = false" class="vc-mobile-menu-link">Ползи</a>
-      <a href="#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
-      <a href="#istoriya" @click="menuOpen = false" class="vc-mobile-menu-link">История</a>
-      <a href="#kontakti" @click="menuOpen = false" class="vc-mobile-menu-link">Контакти</a>
-      <a href="#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right"
+    <!-- Orientation strip: on phones the nav is behind the hamburger, so the active-link highlight
+         has nothing to show. This says where you are and how much is left. Hidden ≥900px, where
+         the nav itself answers the same question. -->
+    <div x-show="scrolled && currentSection" style="display:none" class="vc-crumb" aria-hidden="true">
+      <span class="vc-crumb-label" x-text="currentSection ? currentSection.label : ''">Проблемът</span>
+      <span class="vc-crumb-count"><span x-text="sectionNumber">1</span> / <span x-text="sectionTotal">9</span></span>
+      <span class="vc-crumb-progress"><span class="vc-crumb-progress-fill"
+          :style="`transform: scaleX(${scrollProgress})`"></span></span>
+    </div>
+
+    <nav x-show="menuOpen" x-transition.opacity.duration.200ms id="vc-mobile-menu" class="vc-mobile-menu"
+      aria-label="Мобилна навигация" style="display:none">
+      <a href="#kak-raboti" @click="goTo('kak-raboti')" :class="{ 'is-active': isActive('kak-raboti') }"
+        :aria-current="isActive('kak-raboti') ? 'true' : null" class="vc-mobile-menu-link">Как работи</a>
+      <a href="#polzi" @click="goTo('polzi')" :class="{ 'is-active': isActive('polzi') }"
+        :aria-current="isActive('polzi') ? 'true' : null" class="vc-mobile-menu-link">Ползи</a>
+      <a href="#ceni" @click="goTo('ceni')" :class="{ 'is-active': isActive('ceni') }"
+        :aria-current="isActive('ceni') ? 'true' : null" class="vc-mobile-menu-link">Цени</a>
+      <a href="#istoriya" @click="goTo('istoriya')" :class="{ 'is-active': isActive('istoriya') }"
+        :aria-current="isActive('istoriya') ? 'true' : null" class="vc-mobile-menu-link">История</a>
+      <a href="#kontakti" @click="goTo('kontakti')" :class="{ 'is-active': isActive('kontakti') }"
+        :aria-current="isActive('kontakti') ? 'true' : null" class="vc-mobile-menu-link">Контакти</a>
+      <a href="#demo" @click="goTo('demo')" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right"
           aria-hidden="true"></i></a>
     </nav>
   </header>
 
-  <main id="main-content">
+  <!-- tabindex: the skip link and scrollToTop() both move focus here, and only a focusable
+       element actually receives it. -->
+  <main id="main-content" tabindex="-1">
 
     <!-- HERO -->
     <section id="top" class="vc-hero-section">
@@ -218,7 +246,7 @@
     </section>
 
     <!-- PROBLEM -->
-    <section class="vc-problems-section">
+    <section id="problemi" class="vc-problems-section">
       <div class="vc-container">
         <span class="vc-section-label">Проблемът</span>
         <h2 class="vc-h2">Знаем как изглежда работата в малка клиника</h2>
@@ -257,20 +285,30 @@
       <div class="vc-container">
         <span class="vc-section-label">Как работи</span>
         <h2 class="vc-h2">Започвате за дни, не за месеци</h2>
-        <div class="vc-steps-layout" x-data="{ activeStep: 0 }">
-          <div class="vc-step-buttons">
-            <button @click="activeStep = 0" :class="{ active: activeStep === 0 }" class="vc-step-btn">
+        <div class="vc-steps-layout" x-data="vetcareSteps">
+          <!-- Keyboard handling sits on the list, not on each tab: the events bubble up from the
+               buttons, so one pair of handlers covers all three. -->
+          <div class="vc-step-buttons" role="tablist" aria-orientation="vertical"
+            aria-label="Стъпки за започване с VetCare" @keydown.arrow-down.prevent="move(1)"
+            @keydown.arrow-up.prevent="move(-1)" @keydown.home.prevent="jump(0)" @keydown.end.prevent="jump(2)">
+            <button @click="activeStep = 0" :class="{ active: activeStep === 0 }" role="tab" x-ref="tab0"
+              id="vc-step-tab-0" aria-controls="vc-step-panel-0" :aria-selected="(activeStep === 0).toString()"
+              :tabindex="activeStep === 0 ? 0 : -1" class="vc-step-btn">
               <span class="vc-step-num">01</span>
               <span><span class="vc-step-title">Прехвърляме данните ви — безплатно</span><span
                   class="vc-step-text">Свързвате се с нас, а ние извличаме картоните, клиентите и историята от стария ви
                   софтуер. Не започвате от нула.</span></span>
             </button>
-            <button @click="activeStep = 1" :class="{ active: activeStep === 1 }" class="vc-step-btn">
+            <button @click="activeStep = 1" :class="{ active: activeStep === 1 }" role="tab" x-ref="tab1"
+              id="vc-step-tab-1" aria-controls="vc-step-panel-1" :aria-selected="(activeStep === 1).toString()"
+              :tabindex="activeStep === 1 ? 0 : -1" class="vc-step-btn">
               <span class="vc-step-num">02</span>
               <span><span class="vc-step-title">Влизате от всяко устройство</span><span class="vc-step-text">Компютър на
                   рецепцията, лаптоп, телефон в кабинета — отваряте браузър и работите. Без инсталации.</span></span>
             </button>
-            <button @click="activeStep = 2" :class="{ active: activeStep === 2 }" class="vc-step-btn">
+            <button @click="activeStep = 2" :class="{ active: activeStep === 2 }" role="tab" x-ref="tab2"
+              id="vc-step-tab-2" aria-controls="vc-step-panel-2" :aria-selected="(activeStep === 2).toString()"
+              :tabindex="activeStep === 2 ? 0 : -1" class="vc-step-btn">
               <span class="vc-step-num">03</span>
               <span><span class="vc-step-title">Системата работи за вас</span><span class="vc-step-text">Автоматичните
                   напомняния за ваксини и обезпаразитяване се изпращат сами. По-малко пропуснати прегледи.</span></span>
@@ -278,7 +316,8 @@
           </div>
 
           <div class="vc-step-panel">
-            <div x-show="activeStep === 0">
+            <div x-show="activeStep === 0" id="vc-step-panel-0" role="tabpanel" aria-labelledby="vc-step-tab-0"
+              tabindex="0">
               <div class="vc-step-panel-label"><i class="ti ti-transfer" aria-hidden="true"></i>Миграция на данни</div>
               <div class="vc-migration-row">
                 <div class="vc-migration-box">
@@ -300,7 +339,8 @@
               <div class="vc-step-ok"><i class="ti ti-check" aria-hidden="true"></i>Готово — нищо не е изгубено,
                 безплатно.</div>
             </div>
-            <div x-show="activeStep === 1" style="display:none">
+            <div x-show="activeStep === 1" style="display:none" id="vc-step-panel-1" role="tabpanel"
+              aria-labelledby="vc-step-tab-1" tabindex="0">
               <div class="vc-step-panel-label"><i class="ti ti-devices" aria-hidden="true"></i>Достъп от всяко
                 устройство</div>
               <div class="vc-devices-row" aria-hidden="true">
@@ -321,7 +361,8 @@
               <div class="vc-step-ok vc-step-ok--center"><i class="ti ti-check" aria-hidden="true"></i>Отваряте браузър
                 и работите. Без инсталации.</div>
             </div>
-            <div x-show="activeStep === 2" style="display:none">
+            <div x-show="activeStep === 2" style="display:none" id="vc-step-panel-2" role="tabpanel"
+              aria-labelledby="vc-step-tab-2" tabindex="0">
               <div class="vc-step-panel-label"><i class="ti ti-bell" aria-hidden="true"></i>Автоматични напомняния</div>
               <div class="vc-reminders-list">
                 <div class="vc-reminder-card vc-reminder-card--primary"><span
@@ -569,7 +610,7 @@
     </section>
 
     <!-- FAQ -->
-    <section class="vc-faq-section">
+    <section id="chesti-vaprosi" class="vc-faq-section">
       <div class="vc-faq-inner">
         <span class="vc-section-label vc-section-label--center">Въпроси</span>
         <h2 class="vc-h2">Често задавани въпроси</h2>
@@ -710,9 +751,11 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="vc-footer">
-      <div class="vc-footer-inner">
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="vc-footer">
+    <div class="vc-footer-inner">
         <div class="vc-footer-top">
           <div class="vc-footer-brand">
             <div class="vc-footer-logo">
@@ -746,12 +789,21 @@
           <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
         </div>
       </div>
-    </footer>
+  </footer>
 
-  </main>
-
-  <a href="#demo" class="vc-sticky-cta" aria-label="Пробвайте демо — VetCare">Пробвайте демо<i class="ti ti-arrow-right"
+  <!-- Toggled by class rather than x-show: the bar slides out of the bottom edge, which needs a
+       laid-out element. Its resting state in CSS is already off screen and visibility:hidden, so
+       there is no pre-hydration flash and nothing tabbable while it's away. -->
+  <a href="#demo" @click="goTo('demo')" :class="{ 'vc-sticky-cta--in': showStickyCta }"
+    class="vc-sticky-cta" aria-label="Пробвайте демо — VetCare">Пробвайте демо<i class="ti ti-arrow-right"
       aria-hidden="true"></i></a>
+
+  <button type="button" x-show="scrollProgress > 0.15 && !showConsent" x-transition.opacity.duration.200ms
+    style="display:none"
+    @click="scrollToTop()" :class="{ 'vc-to-top--raised': showStickyCta }" class="vc-to-top"
+    aria-label="Обратно към началото">
+    <i class="ti ti-arrow-up" aria-hidden="true"></i>
+  </button>
 
   <div x-show="showConsent" style="display:none" class="vc-consent" role="dialog" aria-live="polite"
     aria-label="Съгласие за бисквитки">
