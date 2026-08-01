@@ -12,10 +12,29 @@ RUN npm ci
 COPY src/ ./
 RUN npm run build
 
+# Cache busting. The built filenames are stable across deploys, so this query string is the only
+# thing that tells a browser — or the Cloudflare edge — that the bytes changed.
+#
+# The webfont is in this list for a reason. Its URL appears twice (the preload in the HTML and the
+# @font-face in icons.min.css) and used to be the one asset left unversioned, so a redeploy served
+# the new icons.min.css immediately while the font came from cache for the full max-age in
+# nginx.conf. Any glyph added in that deploy then renders as *nothing* — font-display: block, and
+# no fallback font covers Tabler's PUA codepoints. Both copies must get the same BUILD_ID, or the
+# preload no longer matches the @font-face and the file is fetched twice.
+#
+# privacy.html is rewritten alongside index.html: it loads the same four assets and was previously
+# left out entirely, so it shipped uncacheable-busted references on every deploy.
 RUN BUILD_ID=$(date +%s) && \
-    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html && \
-    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html && \
-    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" index.html
+    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html privacy.html && \
+    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html privacy.html && \
+    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" index.html privacy.html && \
+    sed -i "s|tabler-icons-subset\.woff2|tabler-icons-subset.woff2?v=${BUILD_ID}|g" \
+        index.html privacy.html assets/css/icons.min.css && \
+    for f in index.html privacy.html assets/css/icons.min.css; do \
+      grep -q "tabler-icons-subset.woff2?v=${BUILD_ID}" "$f" \
+        || { echo "❌ Font cache-busting missed $f — did the preload or @font-face url pattern change?"; exit 1; }; \
+    done && \
+    echo "✅ assets busted with ?v=${BUILD_ID}"
 
 # Demo-provisioning endpoint, baked into the <meta name="vetcare-demo-api"> tag that
 # resolveDemoApi() in main.js reads first. The site is static (no runtime env), so this is
