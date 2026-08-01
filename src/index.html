@@ -130,8 +130,10 @@
 
     <!-- Orientation strip: on phones the nav is behind the hamburger, so the active-link highlight
          has nothing to show. This says where you are and how much is left. Hidden ≥900px, where
-         the nav itself answers the same question. -->
-    <div x-show="scrolled && currentSection" style="display:none" class="vc-crumb" aria-hidden="true">
+         the nav itself answers the same question. Suppressed while the menu is open: below 900px the
+         strip hangs off the header's bottom edge (see .vc-crumb in styles.css) and the menu opens
+         into that same space — and an open nav already answers "where am I". -->
+    <div x-show="scrolled && currentSection && !menuOpen" style="display:none" class="vc-crumb" aria-hidden="true">
       <span class="vc-crumb-label" x-text="currentSection ? currentSection.label : ''">Проблемът</span>
       <span class="vc-crumb-count"><span x-text="sectionNumber">1</span> / <span x-text="sectionTotal">9</span></span>
       <span class="vc-crumb-progress"><span class="vc-crumb-progress-fill"

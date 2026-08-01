@@ -33,6 +33,16 @@
   --vc-bottom-safe: env(safe-area-inset-bottom, 0px);
 }
 
+/* An iPhone SE is 667px tall; header + strip at their desktop size take 106px of that before a
+   word of copy is on screen. Trimming the two tokens is enough — scroll-padding, the mobile menu's
+   max-height and the to-top offset all derive from them, so nothing else needs touching. */
+@media (max-width: 560px) {
+  :root {
+    --vc-header-h: 60px;
+    --vc-crumb-h:  30px;
+  }
+}
+
 /* ── Reset + base ───────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -145,7 +155,7 @@ button { font-family: inherit; }
   max-width: 1160px;
   margin: 0 auto;
   padding: 0 clamp(18px, 5vw, 40px);
-  height: 72px;
+  height: var(--vc-header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -294,6 +304,23 @@ button { font-family: inherit; }
 }
 @media (min-width: 900px) {
   .vc-crumb { display: none !important; }
+}
+/* The strip is revealed by `scrolled`, and the header is in normal flow — so letting the strip sit
+   inside the header box made the header grow by its own height on the first scroll gesture, shoving
+   the whole page down mid-scroll. Hanging it below the header instead pins the header box to
+   --vc-header-h: the strip fades in over the content, nothing reflows, and scroll-padding-top
+   already reserves the height of both. It needs its own background for the same reason. */
+@media (max-width: 899px) {
+  .vc-crumb {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--color-mist);
+  }
 }
 
 .vc-mobile-menu {
@@ -656,6 +683,24 @@ button { font-family: inherit; }
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+/* The checkbox iframe is a fixed 303px hCaptcha won't reflow. The contact form's content box is
+   `viewport − 2·clamp(18px,5vw,40px) − 2·20px`, i.e. 0.9W − 40, which drops under 303px at ~381px —
+   so on a 375px SE (and 360px Androids) the widget sat in a sideways-scrolling strip. Scale it to
+   fit instead: 0.92 lands it at 279px, clearing every viewport down to 354px. `overflow: hidden`
+   because the *laid-out* box stays 303px — only the paint shrinks — so the container would still
+   offer a scrollbar for the 24px of now-empty box. The challenge popup is unaffected; hCaptcha
+   appends that to <body>, not here. */
+@media (max-width: 400px) {
+  .vc-captcha {
+    overflow: hidden;
+    min-height: 72px;
+  }
+  .vc-captcha iframe {
+    transform: scale(0.92);
+    transform-origin: left top;
+  }
 }
 
 .vc-captcha-note {
@@ -1225,6 +1270,47 @@ button { font-family: inherit; }
 .vc-mock-notif-icon i { font-size: 18px; color: #fff; }
 .vc-mock-notif-title { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
 .vc-mock-notif-sub { font-size: 11px; color: var(--color-tertiary); }
+
+/* Hero mockup on phones.
+   The window is a desktop screenshot squeezed into a phone. .vc-mock-sidebar is `width: 148px;
+   flex: none`, so it keeps its full width while the column that carries the actual content absorbs
+   every pixel lost. Solving for an appointment row that fits its name, subtitle and time:
+
+     body = window − 148 (rail) − 36 (content padding) − 26 (row padding) − 89 (icon + time + gaps)
+
+   which needs a ~472px viewport to clear the ~110px "Рекс · Лабрадор" needs. Real phones are
+   375–430px, so the rail goes below 560px. It was costume anyway — the three dots and the URL in
+   the titlebar are what say "this runs in a browser"; a nav rail whose four labels the copy already
+   states is decoration paid for in legibility. The day view then gets the full width (~195px for
+   the name on an SE, up from 22px).
+
+   The mascot and the notification card were also both absolutely positioned into the same bottom
+   corner of a ~320px canvas, so they covered the last row and each other. On phones they stop
+   overlapping the window and become a row underneath it: Рекс on the left, looking at the
+   notification he triggered. */
+@media (max-width: 560px) {
+  .vc-mock-wrapper { padding: 16px 0 0; }
+
+  .vc-mock-sidebar { display: none; }
+  .vc-mock-body { min-height: 0; }
+  .vc-mock-content { padding: 16px 14px 18px; }
+
+  /* Out of the corner and into flow. margin-left clears the mascot's box rather than guessing at
+     an overlap the mascot's transparent padding would make unpredictable. */
+  .vc-mock-notif {
+    position: static;
+    max-width: none;
+    margin: 14px 0 0 84px;
+  }
+
+  /* Bottom-aligned with the notification, tall enough to lean on the window's lower edge by ~14px.
+     216 × 266 intrinsic, so 88px tall is 71px wide — inside the 84px reserved above. */
+  .vc-mock-rex {
+    left: 0;
+    bottom: 0;
+    height: 88px;
+  }
+}
 
 /* Problems closing */
 .vc-problems-closing {
