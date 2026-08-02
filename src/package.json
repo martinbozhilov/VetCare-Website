@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "icons": "node scripts/subset-icons.js",
-    "build": "npm run icons && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
+    "sitemap": "node scripts/gen-sitemap.js",
+    "build": "npm run icons && npm run sitemap && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
     "watch": "node scripts/watch.js",
     "serve": "npx serve -l 8001"
   },
