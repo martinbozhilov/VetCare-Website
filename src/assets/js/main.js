@@ -29,6 +29,19 @@ const VC_SECTIONS = [
   { id: 'kontakti', label: 'Контакти' },
 ];
 
+// Where the "currently reading" band starts, in px below the top of the viewport.
+//
+// This has to match html's scroll-padding-top, which is what decides where an anchor click parks a
+// section. styles.css derives that from --vc-header-h/--vc-crumb-h and changes it at the 560px and
+// 900px breakpoints (102px / 118px / 84px), so reading the computed value is the only way to keep
+// the two in step — see initSectionSpy for what goes wrong when they drift.
+function vcBandTop() {
+  const value = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
+  // +1 because the band's top edge is exclusive: after the jump the previous section's bottom sits
+  // exactly on scroll-padding-top, and sub-pixel rounding could otherwise still count it as inside.
+  return Number.isFinite(value) ? value + 1 : 89;
+}
+
 // Backend demo-provisioning endpoint, resolved per environment:
 //   1. an explicit <meta name="vetcare-demo-api" content="..."> (set per deploy) always wins;
 //   2. otherwise auto-detected from the current host (local dev / dev VPS);
@@ -253,6 +266,11 @@ document.addEventListener('alpine:init', () => {
         this.updateScrollProgress();
         this.updateCtaReveal();
         this.trackScrollDepth();
+        // The observer fires on intersection *changes*, and arriving at the very bottom usually
+        // isn't one — nothing enters or leaves the band over the last few pixels. pickSection()
+        // reads the bottom differently from the middle of the page (see its comment), so it has to
+        // be re-run here or that last stretch keeps whatever the final observer callback decided.
+        this.pickSection();
       }, { passive: true });
 
       this.initSectionSpy();
@@ -297,16 +315,37 @@ document.addEventListener('alpine:init', () => {
     initSectionSpy() {
       const sections = Array.from(document.querySelectorAll('main section[id]'));
       if (!sections.length || !('IntersectionObserver' in window)) return;
+      this._sections = sections; // read by pickSection()
 
       // A section is current from the moment it clears the header until it leaves the top 45% of
       // the viewport. The topmost match wins, so a short section can't steal the highlight from
       // the long one still filling the screen.
-      const spy = new IntersectionObserver((entries) => {
-        entries.forEach((e) => { this._inBand[e.target.id] = e.isIntersecting; });
-        const current = sections.find((s) => this._inBand[s.id]);
-        if (current) this.activeSection = current.id;
-      }, { rootMargin: '-88px 0px -55% 0px' });
-      sections.forEach((s) => spy.observe(s));
+      //
+      // The band must start no higher than where an anchor click parks a section — vcBandTop(),
+      // i.e. html's scroll-padding-top. Start it any higher and the *previous* section's bottom
+      // edge is still inside the band right after the jump, and since the topmost match wins, that
+      // section takes the highlight instead of the one that was clicked. A hardcoded -88px did
+      // exactly that everywhere below 900px, where scroll-padding-top is 118px (102px under
+      // 560px): every nav link lit up the section above the one you asked for, most visibly on
+      // #kontakti, which is last and has nothing below it to scroll on and self-correct.
+      let spy = null;
+      let bandTop = null;
+      const buildSpy = () => {
+        const next = vcBandTop();
+        if (spy && next === bandTop) return;
+        if (spy) spy.disconnect();
+        bandTop = next;
+        spy = new IntersectionObserver((entries) => {
+          entries.forEach((e) => { this._inBand[e.target.id] = e.isIntersecting; });
+          this.pickSection();
+        }, { rootMargin: `-${bandTop}px 0px -55% 0px` });
+        sections.forEach((s) => spy.observe(s));
+      };
+      buildSpy();
+
+      // rootMargin is fixed when the observer is constructed, so crossing a breakpoint (or rotating
+      // a phone) needs a rebuild. buildSpy() is a no-op when the value hasn't actually changed.
+      window.addEventListener('resize', buildSpy, { passive: true });
 
       const presence = new IntersectionObserver((entries) => {
         entries.forEach((e) => { this.onScreen[e.target.id] = e.isIntersecting; });
@@ -340,6 +379,25 @@ document.addEventListener('alpine:init', () => {
         this.ctaRevealed = false;
         this._ctaDelta = 0;
       }
+    },
+
+    // Which section the reader is on, given what is currently inside the band.
+    //
+    // Normally the topmost match wins, so a short section can't steal the highlight from the long
+    // one still filling the screen. At the bottom of the page that rule has to invert: the last
+    // section only has its own height plus the footer left to scroll, and once that is less than
+    // the viewport it can never push the section before it out of the band — so the previous one
+    // would hold the highlight forever. Here #kontakti + footer is 1153px, which breaks every
+    // window taller than ~1238px. Once the page has bottomed out there is nothing below to read,
+    // so the last in-band section is the right answer.
+    pickSection() {
+      if (!this._sections) return;
+      const doc = document.documentElement;
+      // 2px of slack: fractional zoom and device pixel ratios stop scrollY one hair short.
+      const atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 2;
+      const order = atBottom ? this._sections.slice().reverse() : this._sections;
+      const current = order.find((s) => this._inBand[s.id]);
+      if (current) this.activeSection = current.id;
     },
 
     isActive(id) {

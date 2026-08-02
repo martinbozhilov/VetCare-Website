@@ -96,8 +96,8 @@
   <!-- HEADER -->
   <!-- The outside-click and Escape handlers live on the header, not on the menu itself: the menu is
        hidden when closed, and a handler on a hidden element fights the hamburger's own toggle. -->
-  <header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }"
-    @click.outside="menuOpen = false" @keydown.escape.window="menuOpen = false">
+  <header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }" @click.outside="menuOpen = false"
+    @keydown.escape.window="menuOpen = false">
     <div class="vc-header-inner">
       <a href="#top" @click="menuOpen = false" class="vc-logo">
         <img src="assets/images/rex-icon.svg" alt="VetCare лого — дигиталният Рекс" width="34" height="38">
@@ -112,10 +112,10 @@
           :aria-current="isActive('kak-raboti') ? 'true' : null" class="vc-nav-link">Как работи</a>
         <a href="#polzi" @click="goTo('polzi')" :class="{ 'is-active': isActive('polzi') }"
           :aria-current="isActive('polzi') ? 'true' : null" class="vc-nav-link">Ползи</a>
-        <a href="#ceni" @click="goTo('ceni')" :class="{ 'is-active': isActive('ceni') }"
-          :aria-current="isActive('ceni') ? 'true' : null" class="vc-nav-link">Цени</a>
         <a href="#istoriya" @click="goTo('istoriya')" :class="{ 'is-active': isActive('istoriya') }"
           :aria-current="isActive('istoriya') ? 'true' : null" class="vc-nav-link">История</a>
+        <a href="#ceni" @click="goTo('ceni')" :class="{ 'is-active': isActive('ceni') }"
+          :aria-current="isActive('ceni') ? 'true' : null" class="vc-nav-link">Цени</a>
         <a href="#kontakti" @click="goTo('kontakti')" :class="{ 'is-active': isActive('kontakti') }"
           :aria-current="isActive('kontakti') ? 'true' : null" class="vc-nav-link">Контакти</a>
         <a href="#demo" @click="goTo('demo')" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right"
@@ -146,10 +146,10 @@
         :aria-current="isActive('kak-raboti') ? 'true' : null" class="vc-mobile-menu-link">Как работи</a>
       <a href="#polzi" @click="goTo('polzi')" :class="{ 'is-active': isActive('polzi') }"
         :aria-current="isActive('polzi') ? 'true' : null" class="vc-mobile-menu-link">Ползи</a>
-      <a href="#ceni" @click="goTo('ceni')" :class="{ 'is-active': isActive('ceni') }"
-        :aria-current="isActive('ceni') ? 'true' : null" class="vc-mobile-menu-link">Цени</a>
       <a href="#istoriya" @click="goTo('istoriya')" :class="{ 'is-active': isActive('istoriya') }"
         :aria-current="isActive('istoriya') ? 'true' : null" class="vc-mobile-menu-link">История</a>
+      <a href="#ceni" @click="goTo('ceni')" :class="{ 'is-active': isActive('ceni') }"
+        :aria-current="isActive('ceni') ? 'true' : null" class="vc-mobile-menu-link">Цени</a>
       <a href="#kontakti" @click="goTo('kontakti')" :class="{ 'is-active': isActive('kontakti') }"
         :aria-current="isActive('kontakti') ? 'true' : null" class="vc-mobile-menu-link">Контакти</a>
       <a href="#demo" @click="goTo('demo')" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right"
@@ -491,8 +491,7 @@
         <div x-show="!waitDone">
           <!-- novalidate: same reason as the demo form below — native bubbles follow the browser's UI
              language, not lang="bg". submitWait() produces the Bulgarian message in .vc-form-err. -->
-          <form @submit.prevent="submitWait($event)" @focusin="warmCaptcha()" novalidate
-            class="vc-waitlist-form">
+          <form @submit.prevent="submitWait($event)" @focusin="warmCaptcha()" novalidate class="vc-waitlist-form">
             <div class="vc-form-row">
               <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = ''"
                 x-ref="waitEmailInput" :aria-invalid="waitErr ? 'true' : 'false'" aria-describedby="vc-wait-err"
@@ -751,7 +750,8 @@
               <button type="submit" :disabled="contactLoading" class="vc-form-btn vc-contact-btn"><span
                   x-text="contactLoading ? 'Изпращане…' : 'Изпратете'"></span><i class="ti ti-send"
                   aria-hidden="true"></i></button>
-              <p class="vc-contact-footer-note">Използваме имейла ви само за да ви отговорим. Без рекламни съобщения.</p>
+              <p class="vc-contact-footer-note">Използваме имейла ви само за да ви отговорим. Без рекламни съобщения.
+              </p>
             </form>
           </div>
         </div>
@@ -763,51 +763,49 @@
   <!-- FOOTER -->
   <footer class="vc-footer">
     <div class="vc-footer-inner">
-        <div class="vc-footer-top">
-          <div class="vc-footer-brand">
-            <div class="vc-footer-logo">
-              <img src="assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
-              <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span
-                  class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
-            </div>
-            <p class="vc-footer-tagline">Софтуер за ветеринарни клиники. Основните функции остават безплатни.</p>
+      <div class="vc-footer-top">
+        <div class="vc-footer-brand">
+          <div class="vc-footer-logo">
+            <img src="assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
+            <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span
+                class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
           </div>
-          <nav class="vc-footer-nav" aria-label="Навигация">
-            <span class="vc-footer-nav-heading">Навигация</span>
-            <a href="#kak-raboti" class="vc-footer-nav-link">Как работи</a>
-            <a href="#polzi" class="vc-footer-nav-link">Ползи</a>
-            <a href="#ceni" class="vc-footer-nav-link">Цени</a>
-            <a href="#istoriya" class="vc-footer-nav-link">История</a>
-          </nav>
-          <nav class="vc-footer-nav" aria-label="Връзки">
-            <span class="vc-footer-nav-heading">Връзка</span>
-            <a href="#demo" class="vc-footer-nav-link">Пробвайте демо</a>
-            <a href="#waitlist" class="vc-footer-nav-link">Ранна покана</a>
-            <a href="#kontakti" class="vc-footer-nav-link">Контакти</a>
-            <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
-          </nav>
+          <p class="vc-footer-tagline">Софтуер за ветеринарни клиники. Основните функции остават безплатни.</p>
         </div>
-        <div class="vc-footer-bottom">
-          <!-- The literal year is the pre-hydration / no-JS fallback; Alpine overwrites it on init. -->
-          <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
-          <span class="vc-footer-sep" aria-hidden="true">·</span>
-          <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
-          <span class="vc-footer-sep" aria-hidden="true">·</span>
-          <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
-        </div>
+        <nav class="vc-footer-nav" aria-label="Навигация">
+          <span class="vc-footer-nav-heading">Навигация</span>
+          <a href="#kak-raboti" class="vc-footer-nav-link">Как работи</a>
+          <a href="#polzi" class="vc-footer-nav-link">Ползи</a>
+          <a href="#ceni" class="vc-footer-nav-link">Цени</a>
+          <a href="#istoriya" class="vc-footer-nav-link">История</a>
+        </nav>
+        <nav class="vc-footer-nav" aria-label="Връзки">
+          <span class="vc-footer-nav-heading">Връзка</span>
+          <a href="#demo" class="vc-footer-nav-link">Пробвайте демо</a>
+          <a href="#waitlist" class="vc-footer-nav-link">Ранна покана</a>
+          <a href="#kontakti" class="vc-footer-nav-link">Контакти</a>
+          <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
+        </nav>
       </div>
+      <div class="vc-footer-bottom">
+        <!-- The literal year is the pre-hydration / no-JS fallback; Alpine overwrites it on init. -->
+        <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
+      </div>
+    </div>
   </footer>
 
   <!-- Toggled by class rather than x-show: the bar slides out of the bottom edge, which needs a
        laid-out element. Its resting state in CSS is already off screen and visibility:hidden, so
        there is no pre-hydration flash and nothing tabbable while it's away. -->
-  <a href="#demo" @click="goTo('demo')" :class="{ 'vc-sticky-cta--in': showStickyCta }"
-    class="vc-sticky-cta" aria-label="Пробвайте демо — VetCare">Пробвайте демо<i class="ti ti-arrow-right"
-      aria-hidden="true"></i></a>
+  <a href="#demo" @click="goTo('demo')" :class="{ 'vc-sticky-cta--in': showStickyCta }" class="vc-sticky-cta"
+    aria-label="Пробвайте демо — VetCare">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
 
   <button type="button" x-show="scrollProgress > 0.15 && !showConsent" x-transition.opacity.duration.200ms
-    style="display:none"
-    @click="scrollToTop()" :class="{ 'vc-to-top--raised': showStickyCta }" class="vc-to-top"
+    style="display:none" @click="scrollToTop()" :class="{ 'vc-to-top--raised': showStickyCta }" class="vc-to-top"
     aria-label="Обратно към началото">
     <i class="ti ti-arrow-up" aria-hidden="true"></i>
   </button>
