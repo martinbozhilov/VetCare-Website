@@ -99,12 +99,38 @@ function loadPostHog() {
 // The contact form uses a normal checkbox widget; the waitlist is invisible (a captcha box under a
 // single email field costs more conversions than it's worth), so its challenge is triggered from
 // submitWait via hcaptcha.execute() and only actually shows a puzzle when hCaptcha wants one.
+//
+// Neither script is in index.html: loadCaptcha() injects web3forms/client/script.js on the
+// visitor's first input gesture (initCaptchaWake), with @focusin on both forms and the submit
+// handlers awaiting it as backstops. Loading hCaptcha on every page view cost three Lighthouse
+// best-practices audits —
+// `deprecations` (its api.js uses the deprecated Protected Audience API), `third-party-cookies`
+// (Cloudflare's __cf_bm on js.hcaptcha.com) and `inspector-issues` (the same cookies in its
+// iframes) — 11 of 26 points, i.e. a category score of 58. All three are third-party code we can't
+// fix; keeping it out of the initial load is the only lever. Note the win is the audit score and a
+// lighter critical path, not avoiding the load altogether — anyone who scrolls still pulls it in.
+// Late injection is safe because that script runs its work synchronously at the end of its IIFE
+// (no DOMContentLoaded/readyState wait) and only needs the [data-captcha] elements to exist.
 const VETCARE_CAPTCHA = {
+  clientScript: 'https://web3forms.com/client/script.js',
   // Fallback only — web3forms/client/script.js sets data-sitekey on each container before api.js
   // loads, and that value wins so a key rotation on their side doesn't need a change here.
   sitekey: '50b2fe65-b00b-4b9e-ad62-3ba471098be2',
   widgets: { contact: null, wait: null }, // hCaptcha widget ids, filled in by vcCaptchaReady
+  loader: null, // Promise, created by the first loadCaptcha() call
+  ready: null, // loader's resolve, called from vcCaptchaReady once both widgets exist
 };
+
+// How long to wait for api.js to call vcCaptchaReady before giving up. Without it a submit would
+// sit on a disabled button forever if hCaptcha loads but never fires ?onload=.
+const CAPTCHA_LOAD_TIMEOUT_MS = 15000;
+
+// The first of these starts the load (see init). Genuine input events only — deliberately NOT
+// 'scroll'. Lighthouse resizes the viewport to the full page height for its screenshot, which can
+// fire scroll and would drag hCaptcha back into the audited page load; it never dispatches input.
+// Between them these cover every way a person starts moving down the page: wheel, touch drag,
+// scrollbar or link click, and Space/PageDown/arrow keys.
+const VC_CAPTCHA_WAKE_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
 // Named on window because it's what ?onload= in hCaptcha's api.js URL resolves against. Declared at
 // module scope (not inside alpine:init) so it exists before api.js finishes loading.
@@ -117,9 +143,29 @@ window.vcCaptchaReady = function vcCaptchaReady() {
       ...opts,
     });
   }
+  VETCARE_CAPTCHA.ready?.();
 };
 
-const captchaReady = (name) => VETCARE_CAPTCHA.widgets[name] !== null && !!window.hcaptcha;
+// Resolves once both widgets are rendered. Idempotent — it's called from two @focusin handlers and
+// both submit handlers, and the cached promise means one load serves both forms (vcCaptchaReady
+// renders the contact and waitlist containers in the same pass).
+function loadCaptcha() {
+  if (VETCARE_CAPTCHA.loader) return VETCARE_CAPTCHA.loader;
+  // A rejection stays cached on purpose: web3forms/client/script.js bails out early once an
+  // hCaptcha script tag exists, so re-injecting it wouldn't retry api.js anyway. The error copy
+  // tells the user to reload, which is the actual remedy.
+  VETCARE_CAPTCHA.loader = new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('hCaptcha timed out')), CAPTCHA_LOAD_TIMEOUT_MS);
+    const done = () => clearTimeout(timer);
+    VETCARE_CAPTCHA.ready = () => { done(); resolve(); };
+    const script = document.createElement('script');
+    script.src = VETCARE_CAPTCHA.clientScript;
+    script.async = true;
+    script.onerror = () => { done(); reject(new Error('hCaptcha failed to load')); };
+    document.body.appendChild(script);
+  });
+  return VETCARE_CAPTCHA.loader;
+}
 
 // Returns the token for a form, or '' if the user hasn't satisfied the captcha. For the invisible
 // widget this opens the challenge and waits; for the checkbox one it just reads what's already
@@ -210,6 +256,7 @@ document.addEventListener('alpine:init', () => {
       }, { passive: true });
 
       this.initSectionSpy();
+      this.initCaptchaWake();
       // The menu is a full-height overlay on phones — letting the page scroll behind it loses the
       // reader's place.
       this.$watch('menuOpen', (open) => {
@@ -224,6 +271,22 @@ document.addEventListener('alpine:init', () => {
         });
       } else if (analyticsEnabled() && !this.consentChoice) {
         this.showConsent = true;
+      }
+    },
+
+    // Starts hCaptcha loading as soon as the visitor makes their first move on the page, rather
+    // than waiting for them to touch a form. The contact form's container reserves 78px from the
+    // start (.vc-captcha min-height, so nothing shifts when the widget lands) and that reserve
+    // reads as an empty hole if the widget only appears on @focusin — by which point the user is
+    // already looking at it. One scroll gesture near the top of the page is several seconds of
+    // reading ahead of the form, so it is rendered well before it comes into view.
+    initCaptchaWake() {
+      const wake = () => {
+        for (const type of VC_CAPTCHA_WAKE_EVENTS) window.removeEventListener(type, wake);
+        this.warmCaptcha();
+      };
+      for (const type of VC_CAPTCHA_WAKE_EVENTS) {
+        window.addEventListener(type, wake, { passive: true });
       }
     },
 
@@ -422,6 +485,12 @@ document.addEventListener('alpine:init', () => {
         this.demoLoading = false;
       }
     },
+    // Called from initCaptchaWake (first input gesture) and from @focusin on both Web3Forms forms
+    // as a backstop. A rejection is swallowed: submitWait/submitContact await the same promise and
+    // are where the user-facing message belongs.
+    warmCaptcha() {
+      loadCaptcha().catch(() => {});
+    },
     async submitWait(e) {
       e.preventDefault();
       if (this.waitLoading) return;
@@ -438,14 +507,20 @@ document.addEventListener('alpine:init', () => {
         this.$refs.waitEmailInput?.focus();
         return;
       }
-      if (!captchaReady('wait')) {
-        this.waitErr = `Проверката „не съм робот“ не се зареди. Презаредете страницата или ни пишете на ${VETCARE_CONTACT.toEmail}.`;
-        return;
-      }
       this.waitErr = '';
       // The invisible widget may open a challenge here, so show the loading state around it too —
       // otherwise the button looks idle while hCaptcha's overlay is up.
       this.waitLoading = true;
+      // Normally already resolved by the warm-up (initCaptchaWake / @focusin); this covers a
+      // warm-up still in flight on a slow connection, and a visit that reached submit without
+      // either firing.
+      try {
+        await loadCaptcha();
+      } catch {
+        this.waitErr = `Проверката „не съм робот“ не се зареди. Презаредете страницата или ни пишете на ${VETCARE_CONTACT.toEmail}.`;
+        this.waitLoading = false;
+        return;
+      }
       try {
         const token = await captchaToken('wait');
         if (!token) {
@@ -491,18 +566,25 @@ document.addEventListener('alpine:init', () => {
         return;
       }
       // Captcha last: the token is single-use, so checking it before the fields would make a user
-      // with a typo'd email solve the puzzle twice.
-      if (!captchaReady('contact')) {
+      // with a typo'd email solve the puzzle twice. The same argument covers the load itself.
+      this.contactErr = '';
+      // Held across the load so the button doesn't sit idle if the warm-up is still in flight.
+      // Normally a no-op wait: this widget is rendered from the visitor's first scroll gesture,
+      // long before they have finished typing a message.
+      this.contactLoading = true;
+      try {
+        await loadCaptcha();
+      } catch {
         this.contactErr = `Проверката „не съм робот“ не се зареди. Презаредете страницата или ни пишете на ${VETCARE_CONTACT.toEmail}.`;
+        this.contactLoading = false;
         return;
       }
       const token = await captchaToken('contact');
       if (!token) {
         this.contactErr = 'Моля, потвърдете, че не сте робот.';
+        this.contactLoading = false;
         return;
       }
-      this.contactErr = '';
-      this.contactLoading = true;
       try {
         await sendToWeb3Forms({
           subject: 'Съобщение от контакти – VetCare',

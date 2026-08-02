@@ -491,7 +491,8 @@
         <div x-show="!waitDone">
           <!-- novalidate: same reason as the demo form below — native bubbles follow the browser's UI
              language, not lang="bg". submitWait() produces the Bulgarian message in .vc-form-err. -->
-          <form @submit.prevent="submitWait($event)" novalidate class="vc-waitlist-form">
+          <form @submit.prevent="submitWait($event)" @focusin="warmCaptcha()" novalidate
+            class="vc-waitlist-form">
             <div class="vc-form-row">
               <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = ''"
                 x-ref="waitEmailInput" :aria-invalid="waitErr ? 'true' : 'false'" aria-describedby="vc-wait-err"
@@ -505,7 +506,8 @@
                with the contact form, so without one that key's submissions would be rejected.
                data-render/data-onload are read by web3forms/client/script.js and forwarded to
                hCaptcha's api.js as ?render=explicit&onload=..., which is what lets main.js render
-               both widgets itself and keep their ids. -->
+               both widgets itself and keep their ids. The container sits here from the start but
+               stays empty until the form's @focusin fires loadCaptcha(). -->
             <div class="h-captcha vc-captcha--invisible" data-vc-captcha="wait" data-captcha="true" data-lang="bg"
               data-render="explicit" data-onload="vcCaptchaReady"></div>
           </form>
@@ -712,7 +714,8 @@
             </div>
             <!-- novalidate: same reason as the demo form — native bubbles follow the browser's UI
                language, not lang="bg". submitContact() produces the Bulgarian messages instead. -->
-            <form x-show="!contactDone" @submit.prevent="submitContact($event)" novalidate class="vc-contact-form">
+            <form x-show="!contactDone" @submit.prevent="submitContact($event)" @focusin="warmCaptcha()" novalidate
+              class="vc-contact-form">
               <div aria-hidden="true" class="vc-contact-honeypot">
                 <label>Оставете това поле празно<input type="text" tabindex="-1" autocomplete="off"
                     x-model="contactHoney"></label>
@@ -738,7 +741,9 @@
                  why rendering is explicit). Kept last so submitContact() can validate the fields
                  first — hCaptcha tokens are single-use, so asking for the puzzle before the email is
                  checked would make the user solve it twice. data-lang="bg" keeps the widget's own
-                 copy Bulgarian instead of following the browser's UI language. -->
+                 copy Bulgarian instead of following the browser's UI language. It appears a moment
+                 after the form's @focusin fires loadCaptcha(); .vc-captcha's min-height reserves
+                 the space up front so nothing shifts when it does. -->
               <div class="h-captcha vc-captcha" data-vc-captcha="contact" data-captcha="true" data-lang="bg"
                 data-render="explicit" data-onload="vcCaptchaReady"></div>
               <p id="vc-contact-err" x-show="contactErr" role="alert" style="display:none" class="vc-contact-err-msg"><i
@@ -820,7 +825,9 @@
     </div>
   </div>
 
-  <script src="https://web3forms.com/client/script.js" async defer></script>
+  <!-- web3forms/client/script.js (and the hCaptcha it pulls in) is deliberately NOT loaded here.
+       main.js injects it on first touch of the waitlist or contact form — see the loadCaptcha()
+       comment there for why loading hCaptcha on every page view was worth avoiding. -->
 </body>
 
 </html>
