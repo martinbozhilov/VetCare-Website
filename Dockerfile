@@ -66,6 +66,6 @@ WORKDIR /usr/share/nginx/html
 COPY --from=build /app/index.html /app/privacy.html ./
 COPY --from=build /app/assets ./assets
 COPY --from=build /app/favicon.ico /app/favicon.svg /app/favicon-32.png /app/apple-touch-icon.png ./
-COPY --from=build /app/manifest.webmanifest /app/robots.txt /app/sitemap.xml ./
+COPY --from=build /app/robots.txt /app/sitemap.xml ./
 
 EXPOSE 80
