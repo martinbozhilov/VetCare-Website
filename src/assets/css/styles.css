@@ -1495,6 +1495,23 @@ button { font-family: inherit; }
 .vc-demo-success-icon { font-size: 24px; color: var(--color-light-teal); flex: none; }
 .vc-demo-success-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 5px; }
 .vc-demo-success-text { font-size: 13.5px; line-height: 1.55; color: var(--color-pale-aqua); }
+/* The 409 panel reuses the success shell but is informational, not a completed action — the teal
+   check icon would read as "done" on a request that did not go through. */
+.vc-demo-success--info .vc-demo-success-icon { color: var(--color-pale-aqua); }
+.vc-demo-login-btn { margin-top: 15px; padding: 12px 20px; text-decoration: none; }
+.vc-demo-login-btn i { font-size: 17px; }
+.vc-demo-retry {
+  display: block;
+  margin-top: 13px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--color-light-teal);
+  text-decoration: underline;
+  cursor: pointer;
+}
 .vc-demo-form {
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.16);

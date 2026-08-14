@@ -63,6 +63,20 @@ function resolveDemoApi() {
 }
 const VETCARE_DEMO_API = resolveDemoApi();
 
+// Where an already-registered demo requester is sent (the 409 path in submitDemo). The app exposes
+// GET /login?login_hint=<email>, which starts the OIDC flow and forwards the hint to Keycloak so the
+// username field arrives pre-filled — see AppRoutes.LoginPath in VetCare.Web/Program.cs.
+// Derived from VETCARE_DEMO_API rather than hardcoded, so it rides the same build-time seam
+// (<meta name="vetcare-demo-api">) into every environment instead of needing a second one.
+function resolveDemoLoginBase() {
+  try {
+    return `${new URL(VETCARE_DEMO_API, window.location.origin).origin}/login`;
+  } catch {
+    return `${window.location.origin}/login`;
+  }
+}
+const VETCARE_DEMO_LOGIN = resolveDemoLoginBase();
+
 const VETCARE_ANALYTICS = {
   posthogKey: 'phc_B5rBY3ZG9ytQVQoGjTDzcmLg2LdLFyAzNaz2ugk6ewbq', // public project key from eu.posthog.com
   apiHost: 'https://eu.i.posthog.com',
@@ -249,6 +263,8 @@ document.addEventListener('alpine:init', () => {
     ctaRevealed: false,
 
     demoEmail: '', demoHoney: '', demoDone: false, demoErr: '', demoLoading: false,
+    // 409 from the demo API — the email already has a demo. Its own outcome, not an error.
+    demoExists: false, demoLoginUrl: '',
     waitEmail: '', waitDone: false, waitErr: '', waitLoading: false,
     contactName: '', contactEmail: '', contactMessage: '',
     contactHoney: '', contactDone: false, contactErr: '', contactLoading: false,
@@ -531,7 +547,14 @@ document.addEventListener('alpine:init', () => {
           this.demoDone = true;
           this.track('demo_submitted');
         } else if (res.status === 409) {
-          this.demoErr = 'Вече съществува демо с този имейл — проверете пощата си.';
+          // The visitor already has what they came for, so this hands them a way in instead of a
+          // red message. window.open() runs after the awaited fetch — outside the click's
+          // user-gesture stack — so popup blockers swallow it in the common case; it's the
+          // shortcut when it survives, and the panel's own link is what actually carries the flow.
+          this.demoLoginUrl = `${VETCARE_DEMO_LOGIN}?login_hint=${encodeURIComponent(email)}`;
+          this.demoExists = true;
+          this.track('demo_exists');
+          window.open(this.demoLoginUrl, '_blank', 'noopener');
         } else if (res.status === 429) {
           this.demoErr = 'Твърде много опити. Моля, опитайте отново по-късно.';
         } else {
@@ -542,6 +565,14 @@ document.addEventListener('alpine:init', () => {
       } finally {
         this.demoLoading = false;
       }
+    },
+    // The 409 panel replaces the form, so this is the only way back to the field for someone who
+    // mistyped their address or wants to register a different one.
+    resetDemo() {
+      this.demoExists = false;
+      this.demoLoginUrl = '';
+      this.demoErr = '';
+      this.$nextTick(() => this.$refs.demoEmailInput?.focus());
     },
     // Called from initCaptchaWake (first input gesture) and from @focusin on both Web3Forms forms
     // as a backstop. A rejection is swallowed: submitWait/submitContact await the same promise and
