@@ -583,10 +583,30 @@
                 </div>
               </div>
             </div>
+            <!-- 409 — this email already has a demo. submitDemo() also fires window.open(), but that
+               runs after an await and popup blockers usually eat it, so the link below is the path
+               that actually works; the auto-open is just the shortcut when it gets through. -->
+            <div x-show="demoExists" style="display:none">
+              <div class="vc-demo-success vc-demo-success--info" role="status">
+                <i class="ti ti-info-circle vc-demo-success-icon" aria-hidden="true"></i>
+                <div>
+                  <div class="vc-demo-success-title">Вече имате демо акаунт</div>
+                  <div class="vc-demo-success-text">Отваряме входа в нов таб, с попълнен имейл
+                    <strong x-text="demoEmail.trim()"></strong>. Ако браузърът е блокирал новия таб,
+                    влезте оттук:</div>
+                  <a :href="demoLoginUrl" target="_blank" rel="noopener"
+                    class="vc-form-btn vc-demo-login-btn">Вход в демото<i class="ti ti-external-link"
+                      aria-hidden="true"></i></a>
+                  <button type="button" @click="resetDemo()" class="vc-demo-retry">Опитайте с друг
+                    имейл</button>
+                </div>
+              </div>
+            </div>
             <!-- novalidate: native browser validation bubbles are localized to the *browser's* UI
                language, not lang="bg", so an empty field showed an English message. submitDemo()
                already produces Bulgarian errors in .vc-demo-err — this hands validation to it. -->
-            <form x-show="!demoDone" @submit.prevent="submitDemo($event)" novalidate class="vc-demo-form">
+            <form x-show="!demoDone && !demoExists" @submit.prevent="submitDemo($event)" novalidate
+              class="vc-demo-form">
               <div aria-hidden="true" class="vc-honeypot">
                 <label>Оставете това поле празно<input type="text" tabindex="-1" autocomplete="off"
                     x-model="demoHoney"></label>
@@ -602,9 +622,13 @@
               </div>
               <p id="vc-demo-err" x-show="demoErr" role="alert" style="display:none" class="vc-demo-err"
                 x-text="demoErr"></p>
+              <!-- Matches the app's actual demo lifecycle: a dedicated tenant per request, kept until
+                 DemoTenantOptions.InactivityDays (14) of inactivity, with reminder emails on days 9
+                 and 13. There is no nightly reset — DemoTenantResetJob has no recurring trigger and
+                 only fires from the Super Admin grid. Keep this in step with those options. -->
               <p class="vc-demo-hint"><i class="ti ti-info-circle" aria-hidden="true"></i>
-                Демо средата се нулира ежедневно. Разгледайте свободно всички функции — промените ви не влияят на реални
-                данни.</p>
+                Пълнофункционално демо с примерни данни. Промените ви се запазват. След 14 дни без активност го
+                изтриваме — ще ви пишем предварително.</p>
             </form>
           </div>
         </div>
