@@ -1110,7 +1110,9 @@ button { font-family: inherit; }
 
 /* Section-specific heading/intro overrides */
 .vc-problems-section .vc-h2 { margin: 0 0 14px; }
-.vc-problems-section .vc-section-intro { margin: 0 0 40px; max-width: 680px; }
+/* No max-width here: the intro sits directly above the four full-width problem
+   cards, and a 680px measure left an empty right half that read as truncated. */
+.vc-problems-section .vc-section-intro { margin: 0 0 40px; }
 .vc-how-section .vc-h2 { margin: 0 0 38px; max-width: 680px; }
 .vc-benefits-section .vc-h2 { margin: 0 0 38px; }
 .vc-story-section .vc-h2 { margin: 0 0 22px; }
@@ -1144,6 +1146,9 @@ button { font-family: inherit; }
   letter-spacing: -.02em;
   margin: 0 0 20px;
 }
+/* Second sentence of the hero H1 always starts its own line — the natural wrap
+   left "Без" hanging at the end of the previous line. */
+.vc-hero-h1-line { display: block; }
 .vc-hero-desc {
   font-size: clamp(16px, 1.9vw, 20px);
   line-height: 1.6;
