@@ -28,7 +28,7 @@ const SITE = 'https://vetcare.bg';
 // referenced a file that was never committed before, and nothing else catches that.
 const IMAGES = {
   'index.html': [
-    { loc: 'assets/images/rex-kolaj.png', title: 'Рекс — кучето, заради което създадохме VetCare' },
+    { loc: 'assets/images/rex-kolaj.png', title: 'Рекс - кучето, заради което създадохме VetCare' },
   ],
 };
 
