@@ -119,7 +119,6 @@ button { font-family: inherit; }
 .vc-contact-form,
 .vc-faq-item,
 .vc-mock-window,
-.vc-mock-notif,
 .vc-pricing-card--muted,
 .vc-contact-email-link {
   border: 1px solid var(--color-mist);
@@ -397,8 +396,11 @@ button { font-family: inherit; }
 }
 @media (min-width: 900px) {
   .vc-hero-grid {
-    gap: clamp(36px, 4vw, 68px);
-    grid-template-columns: 1.02fr 0.98fr;
+    gap: clamp(32px, 4vw, 56px);
+    /* The screenshot is a dense desktop UI, so it gets the wider share. The text column never drops
+       below 460px, though: that keeps the H1 to four lines and the three .vc-hero-checks on one
+       (they need ~445px), and it's the 900–1250px range where the 0.9fr share would be narrower. */
+    grid-template-columns: minmax(460px, 0.9fr) minmax(0, 1.1fr);
   }
 }
 
@@ -457,6 +459,15 @@ button { font-family: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+}
+/* In the two-column hero the text column is 460–500px wide (see .vc-hero-grid), while the three
+   ticks need ~520px at the base size. Tightened just enough to keep them on one line; flex-wrap
+   stays on, so a wider system font (e.g. on macOS) wraps rather than overflows. */
+@media (min-width: 900px) {
+  .vc-hero-checks { gap: 8px 10px; font-size: 12px; }
+  .vc-hero-check { gap: 5px; }
+  .vc-hero-checks .vc-hero-check i { font-size: 14px; } /* outranks the base icon size declared later */
 }
 
 /* ── Problem ────────────────────────────────────────────── */
@@ -587,8 +598,6 @@ button { font-family: inherit; }
 
 /* ── Card icon (shared) ─────────────────────────────────── */
 .vc-card-icon,
-.vc-mock-appt-icon,
-.vc-mock-notif-icon,
 .vc-reminder-icon,
 .vc-contact-email-icon {
   display: flex;
@@ -1140,7 +1149,7 @@ button { font-family: inherit; }
 
 /* Hero */
 .vc-hero-h1 {
-  font-size: clamp(31px, 5.2vw, 54px);
+  font-size: clamp(31px, 4.6vw, 48px);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -.02em;
@@ -1159,6 +1168,13 @@ button { font-family: inherit; }
 
 /* Hero browser mockup */
 .vc-mock-wrapper { position: relative; padding: 16px 8px; }
+/* Once the viewport has room beyond the 1160px container, let the window bleed past the container's
+   right edge so the screenshot reads at close to its real size (~680px). The container has no side
+   padding at this size, so the bleed needs 2 × 72px of gutter plus a ~17px scrollbar, i.e. a
+   viewport of at least ~1321px; below 1360 it caused a horizontal scroll. */
+@media (min-width: 1360px) {
+  .vc-mock-wrapper { margin-right: -72px; }
+}
 .vc-mock-rex {
   position: absolute;
   left: -30px;
@@ -1190,128 +1206,18 @@ button { font-family: inherit; }
 .vc-mock-dot--yellow { background: #e8cf9b; }
 .vc-mock-dot--green { background: #a9d2ab; }
 .vc-mock-url { margin-left: 10px; font-size: 12px; color: var(--color-tertiary); }
-.vc-mock-body { display: flex; min-height: 300px; }
-.vc-mock-sidebar {
-  width: 148px;
-  flex: none;
-  background: var(--color-primary);
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.vc-mock-sidebar-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 6px 14px;
-}
-.vc-mock-sidebar-logo { height: 22px; width: auto; filter: brightness(0) invert(1); }
-.vc-mock-sidebar-name { color: #fff; font-weight: 700; font-size: 14px; }
-.vc-mock-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 10px;
-  border-radius: 9px;
-  color: var(--color-pale-aqua);
-  font-size: 12.5px;
-}
-.vc-mock-nav-item--active { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
-.vc-mock-nav-item i { font-size: 16px; }
-.vc-mock-content { flex: 1; padding: 18px 18px 22px; background: #fff; min-width: 0; }
-.vc-mock-cal-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.vc-mock-cal-title { font-size: 15px; font-weight: 700; }
-.vc-mock-cal-count { font-size: 12px; color: var(--color-tertiary); }
-.vc-mock-appts { display: flex; flex-direction: column; gap: 8px; }
-.vc-mock-appt {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-mist);
-  border-radius: 11px;
-}
-.vc-mock-appt--dashed { border-style: dashed; border-color: var(--color-mist); }
-.vc-mock-appt-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: var(--accent-soft);
-  font-size: 17px;
-}
-.vc-mock-appt-icon--muted { background: var(--color-offwhite); }
-.vc-mock-appt-body { flex: 1; min-width: 0; }
-.vc-mock-appt-name { font-size: 13px; font-weight: 600; }
-.vc-mock-appt-sub { font-size: 11.5px; color: var(--color-tertiary); }
-.vc-mock-appt-time { font-size: 11.5px; font-weight: 600; color: var(--accent-dark); }
-.vc-mock-appt-time--muted { color: var(--color-tertiary); }
-.vc-mock-notif {
-  position: absolute;
-  z-index: 2;
-  right: 8px;
-  bottom: 2px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  border-radius: 13px;
-  padding: 11px 14px;
-  box-shadow: 0 18px 36px -18px rgba(11,47,57,.4);
-  max-width: 228px;
-}
-.vc-mock-notif-icon {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  border-radius: 9px;
-  background: var(--accent);
-}
-.vc-mock-notif-icon i { font-size: 18px; color: #fff; }
-.vc-mock-notif-title { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
-.vc-mock-notif-sub { font-size: 11px; color: var(--color-tertiary); }
-
-/* Hero mockup on phones.
-   The window is a desktop screenshot squeezed into a phone. .vc-mock-sidebar is `width: 148px;
-   flex: none`, so it keeps its full width while the column that carries the actual content absorbs
-   every pixel lost. Solving for an appointment row that fits its name, subtitle and time:
-
-     body = window − 148 (rail) − 36 (content padding) − 26 (row padding) − 89 (icon + time + gaps)
-
-   which needs a ~472px viewport to clear the ~110px "Рекс · Лабрадор" needs. Real phones are
-   375–430px, so the rail goes below 560px. It was costume anyway — the three dots and the URL in
-   the titlebar are what say "this runs in a browser"; a nav rail whose four labels the copy already
-   states is decoration paid for in legibility. The day view then gets the full width (~195px for
-   the name on an SE, up from 22px).
-
-   The mascot and the notification card were also both absolutely positioned into the same bottom
-   corner of a ~320px canvas, so they covered the last row and each other. On phones they stop
-   overlapping the window and become a row underneath it: Рекс on the left, looking at the
-   notification he triggered. */
+/* A real screenshot of the app (the Пациенти screen, 1613×927 after cropping the app's own 10px
+   scrollbar off the right edge, where it read as a stray grey line). width/height on the <img>
+   match the file so the aspect ratio is reserved before it loads; it is the hero's LCP element,
+   hence fetchpriority="high" on it rather than on the mascot. */
+.vc-mock-screenshot { display: block; width: 100%; height: auto; }
+/* Hero mockup on phones. The screenshot is only ~340px wide here, so the mascot shrinks and drops
+   below the window, leaning on its bottom-left corner (the app's settings/user area) instead of
+   sitting on the content. padding-bottom reserves the part of him that hangs below. */
 @media (max-width: 560px) {
-  .vc-mock-wrapper { padding: 16px 0 0; }
-
-  .vc-mock-sidebar { display: none; }
-  .vc-mock-body { min-height: 0; }
-  .vc-mock-content { padding: 16px 14px 18px; }
-
-  /* Out of the corner and into flow. margin-left clears the mascot's box rather than guessing at
-     an overlap the mascot's transparent padding would make unpredictable. */
-  .vc-mock-notif {
-    position: static;
-    max-width: none;
-    margin: 14px 0 0 84px;
-  }
-
-  /* Bottom-aligned with the notification, tall enough to lean on the window's lower edge by ~14px.
-     216 × 266 intrinsic, so 88px tall is 71px wide — inside the 84px reserved above. */
+  .vc-mock-wrapper { padding: 16px 0 40px; }
   .vc-mock-rex {
-    left: 0;
+    left: -4px;
     bottom: 0;
     height: 88px;
   }
