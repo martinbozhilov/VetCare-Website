@@ -758,7 +758,7 @@ button { font-family: inherit; }
   grid-template-columns: 1fr;
 }
 @media (min-width: 900px) {
-  .vc-pricing-grid { grid-template-columns: 1fr 1fr; }
+  .vc-pricing-grid { grid-template-columns: 1.25fr 1fr; }
 }
 
 /* ── Demo ───────────────────────────────────────────────── */
@@ -1372,10 +1372,17 @@ button { font-family: inherit; }
 .vc-pricing-title--muted { color: var(--color-tertiary); }
 .vc-pricing-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
 .vc-pricing-amount { font-size: 44px; font-weight: var(--weight-bold); letter-spacing: -.03em; }
-.vc-pricing-amount--muted { color: var(--color-tertiary); }
 .vc-pricing-period { font-size: 14px; color: var(--color-tertiary); }
+/* The advanced plan has no price yet: an empty "€ / месец" in pale aqua reads as "price to come"
+   rather than as missing data, and stays clearly behind the free plan's 0 €. */
+.vc-pricing-amount--muted,
+.vc-pricing-period--muted { color: var(--color-pale-aqua); }
 .vc-pricing-desc { font-size: 14.5px; line-height: 1.6; color: var(--color-tertiary); margin: 0 0 18px; }
-.vc-pricing-features { display: flex; flex-direction: column; gap: 10px; }
+.vc-pricing-card--featured { display: flex; flex-direction: column; }
+.vc-pricing-features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.vc-pricing-features .vc-check-row--extra { border-top: 1px solid var(--color-mist); margin-top: 6px; padding-top: 16px; }
+.vc-pricing-cta { margin-top: auto; align-self: stretch; }
+.vc-pricing-card--featured .vc-pricing-features { margin-bottom: 24px; }
 .vc-pricing-features .vc-check-row i { font-size: 18px; color: var(--accent); }
 .vc-pricing-features .vc-check-row--muted i { font-size: 18px; color: var(--color-tertiary); }
 .vc-pricing-note { font-size: 14.5px; color: var(--color-tertiary); text-align: center; margin: 28px auto 0; max-width: 560px; }
