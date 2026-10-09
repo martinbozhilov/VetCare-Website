@@ -617,7 +617,7 @@ document.addEventListener('alpine:init', () => {
           return;
         }
         await sendToWeb3Forms({
-          subject: 'Ранна покана – VetCare',
+          subject: 'Ранна покана - VetCare',
           form_name: 'Ранна покана',
           email,
           'h-captcha-response': token,
@@ -676,7 +676,7 @@ document.addEventListener('alpine:init', () => {
       }
       try {
         await sendToWeb3Forms({
-          subject: 'Съобщение от контакти – VetCare',
+          subject: 'Съобщение от контакти - VetCare',
           form_name: 'Контактна форма',
           name: this.contactName,
           email,
