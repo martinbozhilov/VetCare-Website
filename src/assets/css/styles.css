@@ -391,7 +391,7 @@ button { font-family: inherit; }
 .vc-hero-grid {
   display: grid;
   gap: 44px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
 @media (min-width: 900px) {
@@ -406,11 +406,11 @@ button { font-family: inherit; }
 
 .vc-hero-ctas {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   margin-bottom: 20px;
 }
-@media (min-width: 900px) {
+@media (min-width: 600px) {
   .vc-hero-ctas {
     display: flex;
     flex-wrap: wrap;
@@ -478,7 +478,10 @@ button { font-family: inherit; }
 .vc-problems-grid {
   display: grid;
   gap: 14px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 600px) {
+  .vc-problems-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 900px) {
   .vc-problems-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -502,13 +505,13 @@ button { font-family: inherit; }
 .vc-steps-layout {
   display: grid;
   gap: 22px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 @media (min-width: 900px) {
   .vc-steps-layout {
     gap: 48px;
-    grid-template-columns: minmax(0, 400px) 1fr;
+    grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
   }
 }
 
@@ -578,7 +581,10 @@ button { font-family: inherit; }
 .vc-benefits-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 600px) {
+  .vc-benefits-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 900px) {
   .vc-benefits-grid {
@@ -624,13 +630,13 @@ button { font-family: inherit; }
 .vc-story-grid {
   display: grid;
   gap: 28px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
 @media (min-width: 900px) {
   .vc-story-grid {
     gap: 56px;
-    grid-template-columns: minmax(0, 460px) 1fr;
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
   }
 }
 
@@ -664,7 +670,7 @@ button { font-family: inherit; }
   flex-direction: column;
   gap: 10px;
 }
-@media (min-width: 900px) {
+@media (min-width: 600px) {
   .vc-form-row { flex-direction: row; }
 }
 
@@ -697,10 +703,14 @@ button { font-family: inherit; }
 /* The checkbox iframe is a fixed 303px hCaptcha won't reflow. The contact form's content box is
    `viewport − 2·clamp(18px,5vw,40px) − 2·20px`, i.e. 0.9W − 40, which drops under 303px at ~381px —
    so on a 375px SE (and 360px Androids) the widget sat in a sideways-scrolling strip. Scale it to
-   fit instead: 0.92 lands it at 279px, clearing every viewport down to 354px. `overflow: hidden`
+   fit instead: 0.92 lands it at 279px, which fits down to a 357px viewport. `overflow: hidden`
    because the *laid-out* box stays 303px — only the paint shrinks — so the container would still
-   offer a scrollbar for the 24px of now-empty box. The challenge popup is unaffected; hCaptcha
-   appends that to <body>, not here. */
+   offer a scrollbar for the 24px of now-empty box. That also means the scale only works because
+   `.vc-contact-grid`'s column is `minmax(0, 1fr)`; with a bare `1fr` the 303px laid-out iframe
+   would widen the column and push the whole form card off-screen. Below 357px even the scaled
+   widget is clipped, so vcCaptchaReady renders hCaptcha's own compact widget there instead (see
+   `.vc-captcha--compact`). The challenge popup is unaffected; hCaptcha appends that to <body>,
+   not here. */
 @media (max-width: 400px) {
   .vc-captcha {
     overflow: hidden;
@@ -711,6 +721,17 @@ button { font-family: inherit; }
     transform-origin: left top;
   }
 }
+
+/* hCaptcha's compact widget (164x144) already fits the narrowest phones, so it isn't scaled. The
+   content box is `W − 78` below 360px (2·18px gutter + 2·20px padding + 2·1px border), and the
+   scaled checkbox needs 279px (303 × 0.92), so it's clipped for W ≤ 356px. The height is reserved up
+   front for those widths so nothing shifts when the compact widget lands. Declared after the
+   400px block so its min-height wins. */
+@media (max-width: 356px) {
+  .vc-captcha { min-height: 144px; }
+}
+.vc-captcha--compact { min-height: 144px; }
+.vc-captcha--compact iframe { transform: none; }
 
 .vc-captcha-note {
   margin: 12px 0 0;
@@ -755,10 +776,10 @@ button { font-family: inherit; }
 .vc-pricing-grid {
   display: grid;
   gap: 18px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
 }
 @media (min-width: 900px) {
-  .vc-pricing-grid { grid-template-columns: 1.25fr 1fr; }
+  .vc-pricing-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
 }
 
 /* ── Demo ───────────────────────────────────────────────── */
@@ -777,13 +798,13 @@ button { font-family: inherit; }
 .vc-demo-grid {
   display: grid;
   gap: 28px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
 @media (min-width: 900px) {
   .vc-demo-grid {
     gap: 48px;
-    grid-template-columns: 1.05fr 0.95fr;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   }
 }
 
@@ -793,16 +814,19 @@ button { font-family: inherit; }
   padding: clamp(60px, 8vw, 108px) clamp(18px, 5vw, 40px);
 }
 
+/* Every fractional track in the page grids is `minmax(0, …)`: a bare `1fr` is `minmax(auto, 1fr)`,
+   so the column can't shrink below its min-content. Here that is hCaptcha's fixed 303px iframe,
+   which pushed the form card past the right edge on phones (see the hCaptcha block). */
 .vc-contact-grid {
   display: grid;
   gap: 28px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 @media (min-width: 900px) {
   .vc-contact-grid {
     gap: 52px;
-    grid-template-columns: 0.9fr 1.1fr;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   }
 }
 
@@ -1155,6 +1179,10 @@ button { font-family: inherit; }
   letter-spacing: -.02em;
   margin: 0 0 20px;
 }
+/* At 320px the clamp's 31px floor runs the H1 to six lines; this only touches the sub-360 range. */
+@media (max-width: 359px) {
+  .vc-hero-h1 { font-size: 28px; }
+}
 /* Second sentence of the hero H1 always starts its own line — the natural wrap
    left "Без" hanging at the end of the previous line. */
 .vc-hero-h1-line { display: block; }
@@ -1413,6 +1441,7 @@ button { font-family: inherit; }
 .vc-demo-success-icon { font-size: 24px; color: var(--color-light-teal); flex: none; }
 .vc-demo-success-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 5px; }
 .vc-demo-success-text { font-size: 13.5px; line-height: 1.55; color: var(--color-pale-aqua); }
+.vc-demo-success-text strong { overflow-wrap: anywhere; } /* long emails in the 409 panel */
 /* The 409 panel reuses the success shell but is informational, not a completed action — the teal
    check icon would read as "done" on a request that did not go through. */
 .vc-demo-success--info .vc-demo-success-icon { color: var(--color-pale-aqua); }
@@ -1505,6 +1534,11 @@ button { font-family: inherit; }
 
 /* Footer */
 .vc-footer-brand { max-width: 340px; }
+/* Below 760px the brand takes its own row, with the two nav columns side by side underneath — left
+   to wrap on its own, "Връзка" ended up alone on a third row at ~600px. */
+@media (max-width: 759px) {
+  .vc-footer-brand { flex-basis: 100%; max-width: none; }
+}
 .vc-footer-logo img { height: 40px; width: auto; }
 .vc-footer-logo-text { display: flex; flex-direction: column; line-height: 1; }
 .vc-footer-tagline { margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-light-teal); max-width: 300px; }
@@ -1781,6 +1815,12 @@ button { font-family: inherit; }
   text-decoration: none;
 }
 .vc-footer-sep { opacity: .55; }
+/* On phones the bottom row wraps and strands the "·" separators at line starts/ends, so the items
+   stack and the separators go instead. One line fits from ~600px. */
+@media (max-width: 599px) {
+  .vc-footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .vc-footer-sep { display: none; }
+}
 .vc-footer-cookie-btn {
   background: none;
   border: none;
@@ -1790,4 +1830,34 @@ button { font-family: inherit; }
   cursor: pointer;
   color: var(--color-light-teal);
   text-decoration: none;
+}
+
+/* ── Not found ──────────────────────────────────────────── */
+/* 404.html reuses the hero buttons and section label; this block is layout only. */
+.vc-notfound-section {
+  padding: clamp(72px, 12vw, 140px) clamp(18px, 5vw, 40px);
+}
+.vc-notfound-container {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.vc-notfound-title {
+  font-size: clamp(28px, 4.4vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.015em;
+  margin: 0 0 14px;
+}
+.vc-notfound-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--color-tertiary);
+  margin: 0 0 28px;
+}
+.vc-notfound-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
 }

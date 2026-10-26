@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!--
+  Source for src/assets/images/vetcare-og.jpg, the link-preview image (og:image / twitter:image).
+
+  It is the hero's browser mockup (.vc-mock-* in styles.css: the app-pacienti.png screenshot in a
+  window frame, with rex-icon.svg leaning on its bottom-left corner) scaled up by --m. No copy on
+  the card on purpose: every platform prints og:title and og:description next to the image.
+  Rex has to keep covering the screenshot's bottom-left corner, as he does in the hero: that is
+  where the app shows the signed-in user's name and email.
+
+  1200x630 at 1.91:1 is Facebook's recommended size and within a few pixels of LinkedIn's
+  1200x627; X crops it to 2:1, i.e. ~15px off the top and bottom, so nothing important sits near
+  those edges. It ships as an opaque JPG, not WebP/SVG/transparent PNG: X documents SVG as
+  unsupported, LinkedIn is unreliable with WebP, preview renderers don't handle transparency
+  consistently, and WhatsApp drops previews over 600KB. Keep the output well under 300KB.
+
+  To regenerate (Git Bash, from the repo root). Render at 2x, then downsample — smoother edges
+  than a 1x screenshot. --user-data-dir keeps it from attaching to an already-running Chrome.
+  Chrome and Node are Windows programs, so every path handed to them is Windows-style
+  (`pwd -W`, `cygpath -m`); Git Bash's own /c/... form makes Chrome render a blank error page.
+
+    OUT="$(cygpath -m "$TEMP")"
+    "/c/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --disable-gpu \
+      --hide-scrollbars --force-device-scale-factor=2 --window-size=1200,630 \
+      --virtual-time-budget=10000 --user-data-dir="$OUT/vc-og-chrome" \
+      --screenshot="$OUT/vc-og@2x.png" "file:///$(pwd -W)/docs/brand/og-image.html"
+    cd src && OG_PNG="$OUT/vc-og@2x.png" node -e "require('sharp')(process.env.OG_PNG).resize(1200, 630, { kernel: 'lanczos3' }).flatten({ background: '#ffffff' }).jpeg({ quality: 85, mozjpeg: true, chromaSubsampling: '4:4:4' }).toFile('assets/images/vetcare-og.jpg').then(console.log)"
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VetCare og:image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=block">
+<style>
+  :root {
+    --color-primary:  #0B2F39;
+    --color-tertiary: #134D5A;
+    --color-secondary:#207885;
+    --color-mist:     #E3F1F3;
+    --color-offwhite: #F4F8FA;
+    /* Scale factor over the hero mockup; frame sizes below are the hero's value × --m. */
+    --m: 1.3;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    position: relative;
+    background: linear-gradient(160deg, var(--color-offwhite) 0%, #ffffff 70%);
+    color: var(--color-primary);
+    font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mock { position: absolute; left: 215px; top: 52px; width: 820px; }
+  /* Mirrors .vc-mock-window / -titlebar / -dot / -url. */
+  .window {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border: 1px solid var(--color-mist);
+    border-radius: calc(18px * var(--m));
+    box-shadow: 0 40px 80px -40px rgba(11, 47, 57, .35), 0 8px 24px -16px rgba(11, 47, 57, .25);
+    overflow: hidden;
+  }
+  .titlebar {
+    display: flex;
+    align-items: center;
+    gap: calc(7px * var(--m));
+    padding: calc(12px * var(--m)) calc(16px * var(--m));
+    border-bottom: 1px solid var(--color-mist);
+    background: var(--color-offwhite);
+  }
+  .dot { width: calc(11px * var(--m)); height: calc(11px * var(--m)); border-radius: 50%; }
+  .dot--red { background: #e0a5a0; }
+  .dot--yellow { background: #e8cf9b; }
+  .dot--green { background: #a9d2ab; }
+  .url { margin-left: calc(10px * var(--m)); font-size: calc(12px * var(--m)); color: var(--color-tertiary); }
+  .shot { display: block; width: 100%; height: auto; }
+  /* Mirrors .vc-mock-rex. */
+  .rex {
+    position: absolute;
+    z-index: 2;
+    left: -70px;
+    bottom: -40px;
+    height: 270px;
+    width: auto;
+    filter: drop-shadow(0 24px 28px rgba(11, 47, 57, .32));
+  }
+
+  .bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 10px;
+    background: linear-gradient(90deg, var(--color-secondary), var(--color-tertiary));
+  }
+</style>
+</head>
+<body>
+  <div class="mock">
+    <img class="rex" src="../../src/assets/images/rex-icon.svg" alt="">
+    <div class="window">
+      <div class="titlebar">
+        <span class="dot dot--red"></span>
+        <span class="dot dot--yellow"></span>
+        <span class="dot dot--green"></span>
+        <span class="url">app.vetcare.bg</span>
+      </div>
+      <img class="shot" src="../../src/assets/images/app-pacienti.png" alt="">
+    </div>
+  </div>
+  <div class="bar"></div>
+</body>
+</html>
