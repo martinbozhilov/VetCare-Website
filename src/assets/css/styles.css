@@ -1401,10 +1401,11 @@ button { font-family: inherit; }
 .vc-pricing-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
 .vc-pricing-amount { font-size: 44px; font-weight: var(--weight-bold); letter-spacing: -.03em; }
 .vc-pricing-period { font-size: 14px; color: var(--color-tertiary); }
-/* The advanced plan has no price yet: an empty "€ / месец" in pale aqua reads as "price to come"
-   rather than as missing data, and stays clearly behind the free plan's 0 €. */
-.vc-pricing-amount--muted,
-.vc-pricing-period--muted { color: var(--color-pale-aqua); }
+/* The advanced plan has no price yet: a bare "€" in pale aqua reads as "price to come" rather than
+   as missing data, and stays clearly behind the free plan's 0 €. "/ месец" keeps the normal period
+   colour — at 14px, pale aqua on white is 1.6:1, far under the 4.5:1 body text needs, and it was
+   the page's only failed Lighthouse contrast check. */
+.vc-pricing-amount--muted { color: var(--color-pale-aqua); }
 .vc-pricing-desc { font-size: 14.5px; line-height: 1.6; color: var(--color-tertiary); margin: 0 0 18px; }
 .vc-pricing-card--featured { display: flex; flex-direction: column; }
 .vc-pricing-features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
