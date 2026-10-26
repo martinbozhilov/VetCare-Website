@@ -85,6 +85,14 @@ const VETCARE_ANALYTICS = {
 const analyticsEnabled = () => !VETCARE_ANALYTICS.posthogKey.startsWith('REPLACE_WITH');
 
 const VC_CONSENT_KEY = 'vc-analytics-consent';
+// Browsers that block site storage (e.g. Chrome's "Block all cookies") throw on any localStorage access,
+// which would abort init() before the banner is wired up. Without storage the choice just isn't remembered.
+function readConsent() {
+  try { return localStorage.getItem(VC_CONSENT_KEY); } catch (e) { return null; }
+}
+function writeConsent(value) {
+  try { localStorage.setItem(VC_CONSENT_KEY, value); } catch (e) { /* storage blocked: choice lasts this page only */ }
+}
 let posthogLoadPromise = null;
 
 function loadPostHog() {
@@ -306,7 +314,7 @@ document.addEventListener('alpine:init', () => {
         document.documentElement.classList.toggle('vc-no-scroll', open);
       });
 
-      this.consentChoice = localStorage.getItem(VC_CONSENT_KEY);
+      this.consentChoice = readConsent();
       if (analyticsEnabled() && this.consentChoice === 'accepted') {
         loadPostHog().then((ph) => {
           ph.opt_in_capturing();
@@ -495,7 +503,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     acceptAnalytics() {
-      localStorage.setItem(VC_CONSENT_KEY, 'accepted');
+      writeConsent('accepted');
       this.consentChoice = 'accepted';
       this.showConsent = false;
       if (analyticsEnabled()) {
@@ -507,7 +515,7 @@ document.addEventListener('alpine:init', () => {
       }
     },
     declineAnalytics() {
-      localStorage.setItem(VC_CONSENT_KEY, 'declined');
+      writeConsent('declined');
       this.consentChoice = 'declined';
       this.showConsent = false;
       if (window.posthog && window.posthog.__loaded) {
