@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Страницата не е намерена - VetCare</title>
+  <meta name="robots" content="noindex">
+
+  <meta name="theme-color" content="#207885">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!-- Self-hosted icon subset — see the matching block in index.html for why it isn't deferred.
+       Every URL on this page is root-absolute: nginx serves it for arbitrary nested paths. -->
+  <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/tabler-icons-subset.woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/icons.min.css">
+
+  <link rel="preconnect" href="https://eu.i.posthog.com">
+  <link rel="preconnect" href="https://eu-assets.i.posthog.com">
+  <link rel="stylesheet" href="/assets/css/styles.min.css">
+
+  <style>[x-cloak]{display:none!important}</style>
+  <script defer src="/assets/js/main.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body x-data="vetcare">
+
+<a class="vc-skip-link" href="#main-content">Прескочете към съдържанието</a>
+
+<!-- HEADER -->
+<header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }"
+  @click.outside="menuOpen = false" @keydown.escape.window="menuOpen = false">
+  <div class="vc-header-inner">
+    <a href="/index.html" class="vc-logo">
+      <img src="/assets/images/rex-icon.svg" alt="VetCare лого - дигиталният Рекс" width="34" height="38">
+      <span class="vc-logo-text">
+        <span class="vc-logo-name">VetCare</span>
+        <span class="vc-logo-sub">VETERINARY SOFTWARE</span>
+      </span>
+    </a>
+
+    <nav class="vc-nav-desktop" aria-label="Главна навигация">
+      <a href="/index.html#kak-raboti" class="vc-nav-link">Как работи</a>
+      <a href="/index.html#polzi" class="vc-nav-link">Ползи</a>
+      <a href="/index.html#ceni" class="vc-nav-link">Цени</a>
+      <a href="/index.html#istoriya" class="vc-nav-link">История</a>
+      <a href="/index.html#kontakti" class="vc-nav-link">Контакти</a>
+      <a href="/index.html#demo" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+    </nav>
+
+    <button @click="menuOpen = !menuOpen" :aria-label="menuOpen ? 'Затворете менюто' : 'Отворете менюто'"
+      :aria-expanded="menuOpen.toString()" aria-controls="vc-mobile-menu" class="vc-hamburger">
+      <i :class="menuOpen ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <nav x-show="menuOpen" x-transition.opacity.duration.200ms id="vc-mobile-menu" class="vc-mobile-menu"
+    aria-label="Мобилна навигация" style="display:none">
+    <a href="/index.html#kak-raboti" @click="menuOpen = false" class="vc-mobile-menu-link">Как работи</a>
+    <a href="/index.html#polzi" @click="menuOpen = false" class="vc-mobile-menu-link">Ползи</a>
+    <a href="/index.html#ceni" @click="menuOpen = false" class="vc-mobile-menu-link">Цени</a>
+    <a href="/index.html#istoriya" @click="menuOpen = false" class="vc-mobile-menu-link">История</a>
+    <a href="/index.html#kontakti" @click="menuOpen = false" class="vc-mobile-menu-link">Контакти</a>
+    <a href="/index.html#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+  </nav>
+</header>
+
+<main id="main-content" tabindex="-1">
+
+  <!-- NOT FOUND -->
+  <section class="vc-notfound-section">
+    <div class="vc-notfound-container">
+      <span class="vc-section-label">Грешка 404</span>
+      <h1 class="vc-notfound-title">Страницата не е намерена</h1>
+      <p class="vc-notfound-text">Адресът, който търсите, не съществува или е преместен. Върнете се към началото или ни пишете - ще ви помогнем.</p>
+      <div class="vc-notfound-actions">
+        <a href="/index.html" class="vc-hero-primary-btn">Към началото<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+        <a href="/index.html#kontakti" class="vc-hero-secondary-btn">Свържете се с нас</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="vc-footer">
+    <div class="vc-footer-inner">
+      <div class="vc-footer-top">
+        <div class="vc-footer-brand">
+          <div class="vc-footer-logo">
+            <img src="/assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
+            <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
+          </div>
+          <p class="vc-footer-tagline">Софтуер за ветеринарни клиники. Основните функции са безплатни.</p>
+        </div>
+        <nav class="vc-footer-nav" aria-label="Навигация">
+          <span class="vc-footer-nav-heading">Навигация</span>
+          <a href="/index.html#kak-raboti" class="vc-footer-nav-link">Как работи</a>
+          <a href="/index.html#polzi" class="vc-footer-nav-link">Ползи</a>
+          <a href="/index.html#ceni" class="vc-footer-nav-link">Цени</a>
+          <a href="/index.html#istoriya" class="vc-footer-nav-link">История</a>
+        </nav>
+        <nav class="vc-footer-nav" aria-label="Връзки">
+          <span class="vc-footer-nav-heading">Връзка</span>
+          <a href="/index.html#demo" class="vc-footer-nav-link">Пробвайте демо</a>
+          <a href="/index.html#waitlist" class="vc-footer-nav-link">Ранна покана</a>
+          <a href="/index.html#kontakti" class="vc-footer-nav-link">Контакти</a>
+          <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
+        </nav>
+      </div>
+      <div class="vc-footer-bottom">
+        <!-- The literal year is the pre-hydration / no-JS fallback; Alpine overwrites it on init. -->
+        <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <a href="/privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<button type="button" x-show="scrollProgress > 0.15 && !showConsent" x-transition.opacity.duration.200ms
+  style="display:none" @click="scrollToTop()" class="vc-to-top" aria-label="Обратно към началото">
+  <i class="ti ti-arrow-up" aria-hidden="true"></i>
+</button>
+
+<div x-show="showConsent" style="display:none" class="vc-consent" role="dialog" aria-live="polite" aria-label="Съгласие за бисквитки">
+  <p class="vc-consent-text">
+    Използваме бисквитки и анализ на посещенията, за да подобряваме VetCare. Данните се събират само след вашето съгласие. Повече в
+    <a href="/privacy.html" class="vc-consent-link">политиката за поверителност</a>.
+  </p>
+  <div class="vc-consent-actions">
+    <button type="button" @click="declineAnalytics()" class="vc-consent-btn vc-consent-btn--decline">Отказвам</button>
+    <button type="button" @click="acceptAnalytics()" class="vc-consent-btn">Приемам</button>
+  </div>
+</div>
+
+</body>
+</html>

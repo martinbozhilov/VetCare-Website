@@ -22,15 +22,16 @@ RUN npm run build
 # no fallback font covers Tabler's PUA codepoints. Both copies must get the same BUILD_ID, or the
 # preload no longer matches the @font-face and the file is fetched twice.
 #
-# privacy.html is rewritten alongside index.html: it loads the same four assets and was previously
-# left out entirely, so it shipped uncacheable-busted references on every deploy.
+# privacy.html and 404.html are rewritten alongside index.html: they load the same four assets and
+# privacy.html was previously left out entirely, so it shipped uncacheable-busted references on every
+# deploy. 404.html must keep the font preload line, or the grep loop below fails for it.
 RUN BUILD_ID=$(date +%s) && \
-    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html privacy.html && \
-    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html privacy.html && \
-    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" index.html privacy.html && \
+    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html privacy.html 404.html && \
+    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html privacy.html 404.html && \
+    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" index.html privacy.html 404.html && \
     sed -i "s|tabler-icons-subset\.woff2|tabler-icons-subset.woff2?v=${BUILD_ID}|g" \
-        index.html privacy.html assets/css/icons.min.css && \
-    for f in index.html privacy.html assets/css/icons.min.css; do \
+        index.html privacy.html 404.html assets/css/icons.min.css && \
+    for f in index.html privacy.html 404.html assets/css/icons.min.css; do \
       grep -q "tabler-icons-subset.woff2?v=${BUILD_ID}" "$f" \
         || { echo "❌ Font cache-busting missed $f — did the preload or @font-face url pattern change?"; exit 1; }; \
     done && \
@@ -63,7 +64,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # only the files the live page needs — no node_modules, scripts, package files or docs
 WORKDIR /usr/share/nginx/html
-COPY --from=build /app/index.html /app/privacy.html ./
+COPY --from=build /app/index.html /app/privacy.html /app/404.html ./
 COPY --from=build /app/assets ./assets
 COPY --from=build /app/favicon.ico /app/favicon.svg /app/favicon-32.png /app/apple-touch-icon.png ./
 COPY --from=build /app/robots.txt /app/sitemap.xml ./

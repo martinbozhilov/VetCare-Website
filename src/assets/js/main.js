@@ -104,7 +104,8 @@ function loadPostHog() {
         autocapture: true,
         opt_out_capturing_by_default: true,
         disable_session_recording: true,
-        maskAllInputs: true,
+        // posthog-js only reads this nested under session_recording, not at the top level.
+        session_recording: { maskAllInputs: true },
       });
       resolve(window.posthog);
     };
@@ -162,9 +163,17 @@ const VC_CAPTCHA_WAKE_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown']
 // Named on window because it's what ?onload= in hCaptcha's api.js URL resolves against. Declared at
 // module scope (not inside alpine:init) so it exists before api.js finishes loading.
 window.vcCaptchaReady = function vcCaptchaReady() {
-  for (const [name, opts] of [['contact', {}], ['wait', { size: 'invisible' }]]) {
+  for (const [name, baseOpts] of [['contact', {}], ['wait', { size: 'invisible' }]]) {
     const el = document.querySelector(`[data-vc-captcha="${name}"]`);
     if (!el) continue;
+    const opts = { ...baseOpts };
+    // The checkbox is a fixed 303px iframe that the CSS scales to 0.92 (279px) on phones. A
+    // container narrower than that would clip hCaptcha's logo and privacy/terms links, so fall back
+    // to its 164x144 compact widget instead of shrinking further (the links must stay legible).
+    if (name === 'contact' && el.clientWidth < 279) {
+      opts.size = 'compact';
+      el.classList.add('vc-captcha--compact');
+    }
     VETCARE_CAPTCHA.widgets[name] = window.hcaptcha.render(el, {
       sitekey: el.dataset.sitekey || VETCARE_CAPTCHA.sitekey,
       ...opts,
