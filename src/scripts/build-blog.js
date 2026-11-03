@@ -44,6 +44,10 @@ const formatDate = (iso) => {
 };
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// The site writes a dash as " - " (no em or en dashes). Where a line wraps at the space before it,
+// the next line starts with "- " and reads like a list bullet, so in visible text the space before
+// the dash is a no-break space. Meta tags and JSON-LD keep the plain text.
+const glueDash = (s) => s.replace(/ - /g, ' - ');
 // JSON inside <script>: a "</script>" in any value would end the block early.
 const jsonLd = (obj) => JSON.stringify(obj, null, 2).replace(/</g, '\\u003c');
 const rel = (file) => path.relative(SRC, file).replace(/\\/g, '/');
@@ -174,6 +178,8 @@ async function renderMarkdown(post) {
       throw new Error(`${post.sourceFile}: "# ${t.text}" is an H1; the title is the page's only H1 — use ## for sections`);
     }
     if (t.type === 'image') images.push(t.href);
+    // Plain text only: code spans and URLs are other token types, so they keep their spaces.
+    if (t.type === 'text') t.text = glueDash(t.text);
   });
   const ready = new Map();
   for (const href of images) {
@@ -431,7 +437,7 @@ ${header('true')}
     <div class="vc-container">
       <div class="vc-article-head">
         <a href="/blog" class="vc-article-back"><i class="ti ti-arrow-left" aria-hidden="true"></i>Всички статии</a>
-        <h1 class="vc-article-title">${esc(post.title)}</h1>
+        <h1 class="vc-article-title">${esc(glueDash(post.title))}</h1>
         <p class="vc-article-meta">${meta}</p>
       </div>
 
@@ -470,9 +476,9 @@ async function listPage(posts) {
 ${img}
             </div>
             <div class="vc-blog-card-body">
-              <h2 class="vc-blog-card-title"><a href="${post.path}" class="vc-blog-card-link">${esc(post.title)}</a></h2>
+              <h2 class="vc-blog-card-title"><a href="${post.path}" class="vc-blog-card-link">${esc(glueDash(post.title))}</a></h2>
               <p class="vc-blog-card-date">${timeTag(post.date)}</p>
-              <p class="vc-blog-card-desc">${esc(post.description)}</p>
+              <p class="vc-blog-card-desc">${esc(glueDash(post.description))}</p>
             </div>
           </article>
         </li>

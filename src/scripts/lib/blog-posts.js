@@ -30,6 +30,10 @@ const FIELDS = {
   image_alt: true,
   seo_title: false, // <title>/og:title when the H1 is too long for a search result
   updated: false, // YYYY-MM-DD, set when the article is materially revised (dateModified)
+  // The search phrase the article targets: a note for whoever writes it, never output. Google ignores
+  // <meta name="keywords">, so there is nothing to render it into; it is accepted so that articles
+  // drafted with it can be dropped in as they are.
+  keyword: false,
 };
 
 // The share image is shown by Facebook, LinkedIn, X and WhatsApp exactly as the og:image:* tags
