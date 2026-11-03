@@ -46,8 +46,10 @@ const formatDate = (iso) => {
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 // The site writes a dash as " - " (no em or en dashes). Where a line wraps at the space before it,
 // the next line starts with "- " and reads like a list bullet, so in visible text the space before
-// the dash is a no-break space. Meta tags and JSON-LD keep the plain text.
-const glueDash = (s) => s.replace(/ - /g, ' - ');
+// the dash is a no-break space. Meta tags and JSON-LD keep the plain text. The no-break space is
+// spelled out rather than typed, because a literal one is invisible and editors normalise it away.
+const NBSP = String.fromCharCode(0xa0);
+const glueDash = (s) => s.replace(/ - /g, `${NBSP}- `);
 // JSON inside <script>: a "</script>" in any value would end the block early.
 const jsonLd = (obj) => JSON.stringify(obj, null, 2).replace(/</g, '\\u003c');
 const rel = (file) => path.relative(SRC, file).replace(/\\/g, '/');
