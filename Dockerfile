@@ -8,7 +8,8 @@ WORKDIR /app
 COPY src/package.json src/package-lock.json ./
 RUN npm ci
 
-# bring in the source and produce assets/js/main.min.js + assets/css/styles.min.css
+# bring in the source and run the full build: blog/ from content/blog/, the icon subset, the minified
+# JS/CSS. sitemap.xml can't be regenerated without .git, so that step only checks the committed one.
 COPY src/ ./
 RUN npm run build
 
@@ -22,16 +23,18 @@ RUN npm run build
 # no fallback font covers Tabler's PUA codepoints. Both copies must get the same BUILD_ID, or the
 # preload no longer matches the @font-face and the file is fetched twice.
 #
-# privacy.html and 404.html are rewritten alongside index.html: they load the same four assets and
-# privacy.html was previously left out entirely, so it shipped uncacheable-busted references on every
-# deploy. 404.html must keep the font preload line, or the grep loop below fails for it.
+# Every page is rewritten, not just index.html: they all load the same four assets, and privacy.html
+# was once left out entirely, so it shipped uncacheable-busted references on every deploy. That
+# includes the generated blog pages (blog/*.html, from scripts/build-blog.js). Every page must keep
+# the font preload line, or the grep loop below fails for it.
 RUN BUILD_ID=$(date +%s) && \
-    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" index.html privacy.html 404.html && \
-    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" index.html privacy.html 404.html && \
-    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" index.html privacy.html 404.html && \
+    PAGES="index.html privacy.html 404.html $(ls blog/*.html)" && \
+    sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" $PAGES && \
+    sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" $PAGES && \
+    sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" $PAGES && \
     sed -i "s|tabler-icons-subset\.woff2|tabler-icons-subset.woff2?v=${BUILD_ID}|g" \
-        index.html privacy.html 404.html assets/css/icons.min.css && \
-    for f in index.html privacy.html 404.html assets/css/icons.min.css; do \
+        $PAGES assets/css/icons.min.css && \
+    for f in $PAGES assets/css/icons.min.css; do \
       grep -q "tabler-icons-subset.woff2?v=${BUILD_ID}" "$f" \
         || { echo "❌ Font cache-busting missed $f — did the preload or @font-face url pattern change?"; exit 1; }; \
     done && \
@@ -62,9 +65,11 @@ FROM nginx:1.27-alpine AS final
 # our static-serving config (gzip + cache headers); front nginx stays the TLS/vhost layer
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# only the files the live page needs — no node_modules, scripts, package files or docs
+# only the files the live page needs — no node_modules, scripts, package files or docs. content/ (the
+# blog's Markdown sources) stays behind too: blog/ is what it was built into.
 WORKDIR /usr/share/nginx/html
 COPY --from=build /app/index.html /app/privacy.html /app/404.html ./
+COPY --from=build /app/blog ./blog
 COPY --from=build /app/assets ./assets
 COPY --from=build /app/favicon.ico /app/favicon.svg /app/favicon-32.png /app/apple-touch-icon.png ./
 COPY --from=build /app/robots.txt /app/sitemap.xml ./

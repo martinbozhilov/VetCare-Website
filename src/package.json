@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "blog": "node scripts/build-blog.js",
     "icons": "node scripts/subset-icons.js",
     "sitemap": "node scripts/gen-sitemap.js",
-    "build": "npm run icons && npm run sitemap && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
+    "build": "npm run blog && npm run icons && npm run sitemap && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
     "watch": "node scripts/watch.js",
     "serve": "npx serve -l 8001"
   },
@@ -18,6 +19,7 @@
     "@tabler/icons-webfont": "^3.14.0",
     "esbuild": "^0.28.1",
     "fontverter": "^2.0.0",
+    "marked": "^18.1.3",
     "opentype.js": "^2.0.0",
     "sharp": "^0.35.3",
     "subset-font": "^2.5.0"

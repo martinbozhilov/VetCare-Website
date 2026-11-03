@@ -16,15 +16,16 @@ const path = require('path');
 const subsetFont = require('subset-font');
 const fontverter = require('fontverter');
 const opentype = require('opentype.js');
+const { SRC, htmlPages } = require('./lib/pages');
 
-const SRC = path.join(__dirname, '..');
 const PKG = path.join(SRC, 'node_modules', '@tabler', 'icons-webfont', 'dist');
 const OUT_FONT = path.join(SRC, 'assets', 'fonts', 'tabler-icons-subset.woff2');
 const OUT_CSS = path.join(SRC, 'assets', 'css', 'icons.css');
 
 function usedIconNames() {
   const names = new Set();
-  for (const file of fs.readdirSync(SRC).filter((f) => f.endsWith('.html'))) {
+  // Includes the generated blog pages, which is why `npm run build` runs `npm run blog` first.
+  for (const file of htmlPages()) {
     const html = fs.readFileSync(path.join(SRC, file), 'utf8');
     for (const m of html.matchAll(/\bti ti-([a-z0-9-]+)/g)) names.add(m[1]);
   }

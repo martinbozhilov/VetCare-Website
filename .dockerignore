@@ -4,3 +4,6 @@
 .superpowers
 docs
 *.md
+# The blog's articles are Markdown too, and the image build renders them (npm run build). `*.md`
+# above only matches the repo root today; this keeps them in if it is ever widened to **/*.md.
+!src/content/blog/**
