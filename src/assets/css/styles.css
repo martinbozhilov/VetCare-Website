@@ -640,12 +640,7 @@ button { font-family: inherit; }
   }
 }
 
-.vc-story-prose {
-  font-family: var(--font-brand);
-  font-size: clamp(16px, 1.8vw, 18.5px);
-  line-height: 1.78;
-  color: var(--color-tertiary);
-}
+/* Size, leading and colour come from the .vc-section-intro rule under "Refactored utilities". */
 .vc-story-prose p { margin: 0 0 18px; }
 .vc-story-prose p:last-child { margin-bottom: 0; }
 
@@ -1032,7 +1027,9 @@ button { font-family: inherit; }
   margin: 0;
 }
 
-.vc-section-intro {
+/* The story's prose shares the section-intro paragraph style, so the two can't drift apart. */
+.vc-section-intro,
+.vc-story-prose {
   font-size: clamp(15px, 1.8vw, 18px);
   line-height: 1.65;
   color: var(--color-tertiary);
