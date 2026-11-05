@@ -640,10 +640,11 @@ button { font-family: inherit; }
   }
 }
 
+/* Same size and leading as .vc-section-intro, the paragraph under every other section heading. */
 .vc-story-prose {
   font-family: var(--font-brand);
-  font-size: clamp(16px, 1.8vw, 18.5px);
-  line-height: 1.78;
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.65;
   color: var(--color-tertiary);
 }
 .vc-story-prose p { margin: 0 0 18px; }
