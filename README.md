@@ -20,6 +20,10 @@ npm run watch
 
 `index.html` loads `assets/js/main.min.js` and `assets/css/styles.min.css`, not the source files. `npm run watch` only re-minifies JS on save — after editing `assets/css/styles.css`, run `npm run build` and refresh manually.
 
+## Blog
+
+Articles live in `src/content/blog/` — one Markdown file per article (`<slug>.md`), its images in `src/content/blog/images/`. `npm run build` (or `npm run blog`) turns them into static pages at `/blog` and `/blog/<slug>`, and updates `sitemap.xml`. Commit the generated `src/blog/` and `sitemap.xml` together with the article. The frontmatter fields and rules are in [CLAUDE.md](./CLAUDE.md#blog).
+
 ## Form submissions
 
 The demo, waitlist, and contact forms send their data to `hello@vetcare.bg` via [Web3Forms](https://web3forms.com) — a client-side form relay, since this site has no backend of its own.
@@ -40,6 +44,7 @@ const VETCARE_CONTACT = {
 - `assets/js/main.js` — Alpine.js component with UI state and form handling
 - `assets/css/styles.css` — all styles, organized by section
 - `assets/images/` — site imagery
+- `content/blog/` — blog articles (Markdown) and their images; `blog/` is generated from them by `scripts/build-blog.js`
 
 Everything above lives under the `src/` directory, which is the project root — `cd src` before running any `npm` command, and paths are relative to it.
 

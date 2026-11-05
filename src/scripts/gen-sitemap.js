@@ -6,22 +6,30 @@
 // sitemap's freshness signals seriously rather than just ignoring the bad field. Deriving the date
 // from git makes it correct by construction.
 //
-// Pages are discovered, not listed: any *.html here is included unless it declares
-// <meta name="robots" content="noindex">. Adding a page therefore needs no edit in this file
-// (an <image:image> entry is the one thing worth adding by hand — see IMAGES below).
+// Pages are discovered, not listed: any *.html here or in blog/ (see scripts/lib/pages.js) is
+// included unless it declares <meta name="robots" content="noindex">. Adding a page therefore needs
+// no edit in this file (an <image:image> entry is the one thing worth adding by hand — see IMAGES
+// below; blog articles get theirs from their frontmatter automatically).
 //
-// Runs as part of `npm run build`. The output is committed like the other generated files, which
-// is what makes the Docker build safe: .dockerignore drops .git, so there is no commit history in
-// the image build. Without it this script would have to invent dates; instead it leaves the
-// committed sitemap.xml untouched and exits (see the gitAvailable check).
+// Blog pages are generated, so their own git history says when the template last changed, not when
+// the article did. Their lastmod comes from the sources instead: the article's Markdown file and
+// cover image, and for /blog itself anything under content/blog/ (an article added, edited or
+// removed all change the list).
+//
+// Runs as part of `npm run build`, after `npm run blog`. The output is committed like the other
+// generated files, which is what makes the Docker build safe: .dockerignore drops .git, so there is
+// no commit history in the image build. Without it this script would have to invent dates; instead
+// it keeps the committed sitemap.xml — but checks that it lists exactly the pages being shipped, so
+// an article committed without re-running the build fails the image build rather than going live
+// missing from the sitemap.
 
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { SRC, SITE, htmlPages, urlFor } = require('./lib/pages');
+const { loadPosts, versionedImage } = require('./lib/blog-posts');
 
-const SRC = path.join(__dirname, '..');
 const OUT = path.join(SRC, 'sitemap.xml');
-const SITE = 'https://vetcare.bg';
 
 // Per-page <image:image> entries. Keys are file names, `loc` is relative to this directory.
 // Every path is checked against the disk below: the og:image/twitter:image tags and this list have
@@ -45,34 +53,33 @@ function git(args) {
   });
 }
 
-// The date the page's content last changed. An uncommitted edit is happening right now, so it wins
-// over the last commit — otherwise a build made while editing would stamp the previous commit's date.
-function lastmod(file) {
-  if (git(['status', '--porcelain', '--', file]).trim()) return today();
-  return git(['log', '-1', '--format=%cs', '--', file]).trim() || today();
+function gitAvailable() {
+  try {
+    git(['rev-parse', '--is-inside-work-tree']);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-// index.html is served at the bare path; everything else keeps its file name, which is what
-// nginx's `try_files $uri $uri/` resolves.
-const urlFor = (file) => (file === 'index.html' ? `${SITE}/` : `${SITE}/${file}`);
+// The date the content last changed, across all of `paths`. An uncommitted edit is happening right
+// now, so it wins over the last commit — otherwise a build made while editing would stamp the
+// previous commit's date.
+function lastmod(paths) {
+  if (git(['status', '--porcelain', '--', ...paths]).trim()) return today();
+  return git(['log', '-1', '--format=%cs', '--', ...paths]).trim() || today();
+}
 
 const escape = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-function main() {
-  try {
-    git(['rev-parse', '--is-inside-work-tree']);
-  } catch {
-    console.log('· sitemap: no git here (Docker build?) — keeping the committed sitemap.xml');
-    return;
-  }
-
-  const pages = fs
-    .readdirSync(SRC)
-    .filter((f) => f.endsWith('.html'))
+// What each page's lastmod is read from, plus its images. Throws if blog/ and content/blog/ disagree,
+// i.e. `npm run blog` hasn't been run since an article was added or removed.
+async function describePages() {
+  const posts = new Map((await loadPosts()).map((p) => [`blog/${p.slug}.html`, p]));
+  const pages = htmlPages()
     .filter((f) => {
-      const html = fs.readFileSync(path.join(SRC, f), 'utf8');
-      if (NOINDEX.test(html)) {
+      if (NOINDEX.test(fs.readFileSync(path.join(SRC, f), 'utf8'))) {
         console.log(`· sitemap: skipping ${f} (noindex)`);
         return false;
       }
@@ -81,16 +88,61 @@ function main() {
     // index.html first, the rest alphabetically — purely so the diff stays readable.
     .sort((a, b) => (a === 'index.html' ? -1 : b === 'index.html' ? 1 : a.localeCompare(b)));
 
+  for (const file of posts.keys()) {
+    if (!pages.includes(file)) throw new Error(`${file} is missing — run \`npm run blog\` first`);
+  }
+
+  return pages.map((file) => {
+    if (file === 'blog/index.html') return { file, sources: ['content/blog'], images: [] };
+    if (file.startsWith('blog/')) {
+      const post = posts.get(file);
+      if (!post) throw new Error(`${file} has no article in content/blog/ — run \`npm run blog\` to remove it`);
+      return {
+        file,
+        sources: [post.sourceFile, post.coverSourceFile],
+        // The same ?v= URL the page itself uses (see versionedImage in lib/blog-posts.js).
+        images: [{ loc: post.image.slice(1), url: `${SITE}${versionedImage(post.image)}`, title: post.imageAlt }],
+      };
+    }
+    return { file, sources: [file], images: IMAGES[file] || [] };
+  });
+}
+
+// Docker build (no git): the committed sitemap.xml ships as is, so it must list exactly these pages.
+function verifyCommitted(pages) {
+  const xml = fs.readFileSync(OUT, 'utf8');
+  const listed = new Set([...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+  const expected = new Set(pages.map((p) => urlFor(p.file)));
+  const missing = [...expected].filter((u) => !listed.has(u));
+  const extra = [...listed].filter((u) => !expected.has(u));
+  if (missing.length || extra.length) {
+    throw new Error(
+      'the committed sitemap.xml is out of date'
+      + (missing.length ? ` — missing ${missing.join(', ')}` : '')
+      + (extra.length ? ` — lists pages that don't exist: ${extra.join(', ')}` : '')
+      + '. Run `npm run build` in a git checkout and commit sitemap.xml.'
+    );
+  }
+  console.log(`· sitemap: no git here (Docker build?) — keeping the committed sitemap.xml (${listed.size} pages, verified)`);
+}
+
+async function main() {
+  const pages = await describePages();
   if (!pages.length) throw new Error('no indexable HTML pages found — refusing to write an empty sitemap');
 
-  const entries = pages.map((file) => {
-    const images = (IMAGES[file] || []).map((img) => {
+  if (!gitAvailable()) {
+    verifyCommitted(pages);
+    return;
+  }
+
+  const entries = pages.map(({ file, sources, images }) => {
+    const imageXml = images.map((img) => {
       if (!fs.existsSync(path.join(SRC, img.loc))) {
         throw new Error(`${file}: sitemap image ${img.loc} does not exist on disk`);
       }
       return (
         `    <image:image>\n` +
-        `      <image:loc>${SITE}/${img.loc}</image:loc>\n` +
+        `      <image:loc>${img.url || `${SITE}/${img.loc}`}</image:loc>\n` +
         `      <image:title>${escape(img.title)}</image:title>\n` +
         `    </image:image>\n`
       );
@@ -99,8 +151,8 @@ function main() {
     return (
       `  <url>\n` +
       `    <loc>${urlFor(file)}</loc>\n` +
-      `    <lastmod>${lastmod(file)}</lastmod>\n` +
-      images.join('') +
+      `    <lastmod>${lastmod(sources)}</lastmod>\n` +
+      imageXml.join('') +
       `  </url>\n`
     );
   });
@@ -115,7 +167,10 @@ function main() {
     `</urlset>\n`;
 
   fs.writeFileSync(OUT, xml);
-  console.log(`✅ sitemap.xml — ${pages.length} page(s): ${pages.map(urlFor).join(', ')}`);
+  console.log(`✅ sitemap.xml — ${pages.length} page(s): ${pages.map((p) => urlFor(p.file)).join(', ')}`);
 }
 
-main();
+main().catch((err) => {
+  console.error(`❌ sitemap: ${err.message}`);
+  process.exit(1);
+});

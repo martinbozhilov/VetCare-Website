@@ -331,7 +331,12 @@ document.addEventListener('alpine:init', () => {
     // reads as an empty hole if the widget only appears on @focusin — by which point the user is
     // already looking at it. One scroll gesture near the top of the page is several seconds of
     // reading ahead of the form, so it is rendered well before it comes into view.
+    //
+    // Only on pages that have a captcha form. privacy.html, 404.html and the blog share this
+    // component but have no form, and loading hCaptcha there would put its third-party scripts and
+    // Cloudflare cookies on pages that never use them.
     initCaptchaWake() {
+      if (!document.querySelector('[data-vc-captcha]')) return;
       const wake = () => {
         for (const type of VC_CAPTCHA_WAKE_EVENTS) window.removeEventListener(type, wake);
         this.warmCaptcha();
