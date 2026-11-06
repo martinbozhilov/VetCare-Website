@@ -86,7 +86,7 @@
       {"@type":"Question","name":"Трябва ли да инсталирам нещо?","acceptedAnswer":{"@type":"Answer","text":"Не. VetCare работи в браузъра (Chrome, Edge, Safari или Firefox) на компютър, лаптоп, таблет или телефон. Ако на устройството ви се отварят нормално сайтове, ще върви и VetCare. Нужна е само интернет връзка."}},
       {"@type":"Question","name":"Какво става с данните ми от стария софтуер?","acceptedAnswer":{"@type":"Answer","text":"Мигрираме ги безплатно. Свързвате се с нас и ние се грижим да прехвърлим картоните, клиентите и историята."}},
       {"@type":"Question","name":"Чии са данните ми?","acceptedAnswer":{"@type":"Answer","text":"Изцяло ваши. Можете да ги експортирате и изтеглите по всяко време."}},
-      {"@type":"Question","name":"Какви напомняния изпраща системата?","acceptedAnswer":{"@type":"Answer","text":"Напомняния за екипа (и повтарящи се), автоматично напомняне за реваксинация и имейл до стопанина, когато ваксината на животното изтича."}},
+      {"@type":"Question","name":"Какви напомняния изпраща системата?","acceptedAnswer":{"@type":"Answer","text":"Напомняния за екипа (и повтарящи се), автоматично напомняне за реваксинация и за подновяване на профилактиката (например обезпаразитяване), и имейл до стопанина, когато ваксината или защитата на животното изтича."}},
       {"@type":"Question","name":"Подходящ ли е за малка клиника?","acceptedAnswer":{"@type":"Answer","text":"Точно за това е създаден - за клиники без IT отдел и без бюджет за скъп софтуер."}}
     ]}
   ]}
@@ -281,7 +281,8 @@
               :tabindex="activeStep === 2 ? 0 : -1" class="vc-step-btn">
               <span class="vc-step-num">03</span>
               <span><span class="vc-step-title">Системата работи за вас</span><span class="vc-step-text">Напомнянията за
-                  ваксини се изпращат сами - на екипа и по имейл на стопаните. По-малко пропуснати ваксинации.</span></span>
+                  ваксини и профилактика се изпращат сами - на екипа и по имейл на стопаните. По-малко пропуснати
+                  ваксинации и обезпаразитявания.</span></span>
             </button>
           </div>
 
@@ -340,20 +341,20 @@
                       class="ti ti-bell"></i></span>
                   <div>
                     <div class="vc-reminder-title">До стопанина · имейл</div>
-                    <div class="vc-reminder-sub">„Ваксината на Рекс изтича на 15 юли.“</div>
+                    <div class="vc-reminder-sub">„Защитата на Рекс от паразити изтича на 15 юли.“</div>
                   </div>
                 </div>
                 <div class="vc-reminder-card vc-reminder-card--secondary"><span
                     class="vc-reminder-icon vc-reminder-icon--secondary" aria-hidden="true"><i
                       class="ti ti-shield-check"></i></span>
                   <div>
-                    <div class="vc-reminder-title">До вас · реваксинации</div>
+                    <div class="vc-reminder-title">До вас · ваксини и профилактика</div>
                     <div class="vc-reminder-sub">3 пациента този месец</div>
                   </div>
                 </div>
               </div>
               <div class="vc-step-ok"><i class="ti ti-check" aria-hidden="true"></i>По-малко пропуснати
-                ваксинации.</div>
+                ваксинации и обезпаразитявания.</div>
             </div>
           </div>
         </div>
@@ -393,8 +394,8 @@
           <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-bell"
                 aria-hidden="true"></i></span>
             <h3 class="vc-benefit-h3">Автоматични напомняния</h3>
-            <p class="vc-benefit-body">Напомняния за ваксини и задачи на екипа, а стопаните получават имейл, когато
-              ваксината изтича.</p>
+            <p class="vc-benefit-body">Напомняния за ваксини, профилактика и задачи на екипа, а стопаните получават
+              имейл, когато ваксината или защитата изтича.</p>
           </div>
           <div class="vc-benefit-card"><span class="vc-card-icon vc-card-icon--lg"><i class="ti ti-headset"
                 aria-hidden="true"></i></span>
@@ -668,7 +669,7 @@
               <i class="ti ti-chevron-down vc-faq-chevron" :class="{ open: faqOpen === 4 }" aria-hidden="true"></i>
             </button>
             <div x-show="faqOpen === 4" class="vc-faq-answer" style="display:none">
-              <p>Напомняния за екипа (и повтарящи се), автоматично напомняне за реваксинация и имейл до стопанина, когато ваксината на животното изтича.</p>
+              <p>Напомняния за екипа (и повтарящи се), автоматично напомняне за реваксинация и за подновяване на профилактиката (например обезпаразитяване), и имейл до стопанина, когато ваксината или защитата на животното изтича.</p>
             </div>
           </div>
 
