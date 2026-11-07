@@ -14,7 +14,9 @@
 // Blog pages are generated, so their own git history says when the template last changed, not when
 // the article did. Their lastmod comes from the sources instead: the article's Markdown file and
 // cover image, and for /blog itself anything under content/blog/ (an article added, edited or
-// removed all change the list).
+// removed all change the list). It is also never earlier than the date the page itself shows
+// (frontmatter `updated`, else `date`, which is also its JSON-LD dateModified): an article can be
+// committed before its publication date, and a lastmod older than the article contradicts the page.
 //
 // Runs as part of `npm run build`, after `npm run blog`. The output is committed like the other
 // generated files, which is what makes the Docker build safe: .dockerignore drops .git, so there is
@@ -70,6 +72,10 @@ function lastmod(paths) {
   return git(['log', '-1', '--format=%cs', '--', ...paths]).trim() || today();
 }
 
+// The date a blog page shows as last changed (its JSON-LD dateModified). ISO dates compare as strings.
+const shownDate = (post) => post.updated || post.date;
+const latest = (dates) => dates.reduce((a, b) => (b > a ? b : a));
+
 const escape = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -93,13 +99,17 @@ async function describePages() {
   }
 
   return pages.map((file) => {
-    if (file === 'blog/index.html') return { file, sources: ['content/blog'], images: [] };
+    if (file === 'blog/index.html') {
+      const shown = [...posts.values()].map(shownDate);
+      return { file, sources: ['content/blog'], notBefore: shown.length ? latest(shown) : null, images: [] };
+    }
     if (file.startsWith('blog/')) {
       const post = posts.get(file);
       if (!post) throw new Error(`${file} has no article in content/blog/ — run \`npm run blog\` to remove it`);
       return {
         file,
         sources: [post.sourceFile, post.coverSourceFile],
+        notBefore: shownDate(post),
         // The same ?v= URL the page itself uses (see versionedImage in lib/blog-posts.js).
         images: [{ loc: post.image.slice(1), url: `${SITE}${versionedImage(post.image)}`, title: post.imageAlt }],
       };
@@ -135,7 +145,7 @@ async function main() {
     return;
   }
 
-  const entries = pages.map(({ file, sources, images }) => {
+  const entries = pages.map(({ file, sources, notBefore, images }) => {
     const imageXml = images.map((img) => {
       if (!fs.existsSync(path.join(SRC, img.loc))) {
         throw new Error(`${file}: sitemap image ${img.loc} does not exist on disk`);
@@ -151,7 +161,7 @@ async function main() {
     return (
       `  <url>\n` +
       `    <loc>${urlFor(file)}</loc>\n` +
-      `    <lastmod>${lastmod(sources)}</lastmod>\n` +
+      `    <lastmod>${notBefore ? latest([lastmod(sources), notBefore]) : lastmod(sources)}</lastmod>\n` +
       imageXml.join('') +
       `  </url>\n`
     );
