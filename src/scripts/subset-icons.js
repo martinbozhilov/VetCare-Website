@@ -2,7 +2,7 @@
 // HTML pages actually reference.
 //
 // Why this exists: the full webfont is 831 KB of woff2 and 227 KB of CSS covering 5610 icons, and
-// this site uses ~26 of them. Loading it from jsDelivr also put two serialized round-trips in front
+// this site uses only a few dozen of them. Loading it from jsDelivr also put two serialized round-trips in front
 // of the first icon paint (the @font-face src isn't discoverable until the CSS has been fetched and
 // applied), and Tabler's @font-face declares no font-display, so the browser's default `auto` —
 // which behaves like `block` — left icons invisible for the whole load. The hero CTA's arrow was
