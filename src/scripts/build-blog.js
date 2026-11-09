@@ -28,6 +28,11 @@ const {
 const OUT_DIR = path.join(SRC, 'blog');
 const TITLE_SUFFIX = ' | VetCare - софтуер за ветеринарни клиники';
 const LOGO = `${SITE}/assets/images/vetcare-logo-512.png`;
+// The Organization node in index.html's JSON-LD (its "@id"). Articles name it as author and publisher,
+// so search engines see one organisation across the site. Absolute, because a bare "#organization"
+// would resolve against each article's own URL. checkHomeOrganization() fails the build if
+// index.html's node ever carries a different id.
+const ORG_ID = `${SITE}/#organization`;
 // The list page has no image of its own, so it shares the site's link-preview card.
 const SITE_CARD = { url: `${SITE}/assets/images/vetcare-og.jpg`, alt: 'Екранът с пациентите във VetCare' };
 const BLOG_INTRO = 'Практични статии за работата във ветеринарната клиника';
@@ -412,9 +417,10 @@ async function articlePage(post) {
     datePublished: post.date,
     dateModified: post.updated || post.date,
     inLanguage: 'bg',
-    // No byline on the page; structured data names the organisation, not a person.
-    author: { '@type': 'Organization', name: 'VetCare', url: SITE },
-    publisher: { '@type': 'Organization', name: 'VetCare', url: SITE, logo: { '@type': 'ImageObject', url: LOGO } },
+    // No byline on the page; structured data names the organisation, not a person: the home page's
+    // Organization node, by its @id.
+    author: { '@type': 'Organization', '@id': ORG_ID, name: 'VetCare', url: SITE },
+    publisher: { '@type': 'Organization', '@id': ORG_ID, name: 'VetCare', url: SITE, logo: { '@type': 'ImageObject', url: LOGO } },
     mainEntityOfPage: { '@type': 'WebPage', '@id': post.url },
     url: post.url,
   };
@@ -538,7 +544,27 @@ ${list}
 ${FOOTER}`;
 }
 
+// index.html is hand-written, so nothing else ties its Organization "@id" to ORG_ID: fail here
+// rather than ship articles that point at an id the home page doesn't define.
+function checkHomeOrganization() {
+  const html = fs.readFileSync(path.join(SRC, 'index.html'), 'utf8');
+  const m = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  if (!m) throw new Error(`index.html: no <script type="application/ld+json"> block, but articles reference its Organization (${ORG_ID})`);
+  let data;
+  try {
+    data = JSON.parse(m[1]);
+  } catch (err) {
+    throw new Error(`index.html: its JSON-LD doesn't parse (${err.message})`);
+  }
+  const orgs = (data['@graph'] || []).filter((n) => n['@type'] === 'Organization');
+  if (orgs.length !== 1 || orgs[0]['@id'] !== ORG_ID) {
+    const found = orgs.map((n) => n['@id']).join(', ') || 'none';
+    throw new Error(`index.html: the JSON-LD needs exactly one Organization node with "@id": "${ORG_ID}" (articles name it as author and publisher); found ${found}`);
+  }
+}
+
 async function main() {
+  checkHomeOrganization();
   const posts = await loadPosts();
   for (const post of posts) {
     for (const w of post.warnings) console.warn(`⚠ blog: ${post.sourceFile}: ${w}`);
