@@ -34,6 +34,11 @@ const FIELDS = {
   // <meta name="keywords">, so there is nothing to render it into; it is accepted so that articles
   // drafted with it can be dropped in as they are.
   keyword: false,
+  // Topic labels, 1-4 comma-separated on one line: `tags: дневници, екип и права`. Shown under the
+  // date on the article page and nowhere else (not on /blog, in <head>, the JSON-LD or the sitemap),
+  // as plain labels, not links. Which tags exist is a closed list in the marketing repo
+  // (data/tags.md), checked there; the build only checks their form (parseTags). Blank means none.
+  tags: false,
 };
 
 // The share image is shown by Facebook, LinkedIn, X and WhatsApp exactly as the og:image:* tags
@@ -58,6 +63,50 @@ function isoDate(value, field) {
     throw new Error(`${field}: "${value}" is not a real date`);
   }
   return value;
+}
+
+// tags: comma-separated, each value trimmed; blank (or absent) means no tags, like the other
+// optional fields. A tag is lowercase words with exactly one ordinary space (U+0020) between them,
+// written entirely in Cyrillic а-я (U+0430-U+044F) or entirely in Latin a-z. Anything else fails
+// rather than being normalised: a tag has to match the marketing repo's list exactly, and a capital,
+// a no-break space or a Latin "с" inside a Cyrillic word looks the same on screen but is not the
+// same tag. Messages name the offending character by code point, since some of them are invisible.
+const MAX_TAGS = 4;
+const CYRILLIC_TAG = /^[а-я]+(?: [а-я]+)*$/;
+const LATIN_TAG = /^[a-z]+(?: [a-z]+)*$/;
+const SINGLE_SPACED = /^\S+(?: \S+)*$/; // \s also matches tabs and no-break spaces
+const TAG_CHAR = /[а-яa-z ]/;
+const charName = (ch) => `"${ch}" (U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')})`;
+
+function parseTags(value) {
+  if (!value) return [];
+  const tags = value.split(',').map((t) => t.trim());
+  if (tags.includes('')) {
+    throw new Error(`tags: "${value}" has an empty tag; check for a leading, trailing or doubled comma`);
+  }
+  if (tags.length > MAX_TAGS) {
+    throw new Error(`tags: "${value}" has ${tags.length} tags; an article takes 1 to ${MAX_TAGS}`);
+  }
+  for (const tag of tags) {
+    if (CYRILLIC_TAG.test(tag) || LATIN_TAG.test(tag)) continue;
+    if (!SINGLE_SPACED.test(tag)) {
+      throw new Error(`tags: "${tag}" must have exactly one ordinary space between words (no double spaces, tabs or no-break spaces)`);
+    }
+    const bad = [...tag].find((ch) => !TAG_CHAR.test(ch));
+    if (bad) {
+      throw new Error(`tags: "${tag}" contains ${charName(bad)}; a tag is lowercase letters (а-я or a-z) and single spaces`);
+    }
+    // Only allowed characters and spacing, yet neither pattern matched, so both alphabets are in it.
+    // Name the letters of the smaller group: that is almost always the lookalike that slipped in.
+    const letters = [...tag].filter((ch) => ch !== ' ');
+    const latin = letters.filter((ch) => /[a-z]/.test(ch));
+    const cyrillic = letters.filter((ch) => !/[a-z]/.test(ch));
+    const [odd, alphabet] = latin.length <= cyrillic.length ? [latin, 'Latin'] : [cyrillic, 'Cyrillic'];
+    throw new Error(`tags: "${tag}" mixes Cyrillic and Latin letters (${alphabet} ${[...new Set(odd)].map(charName).join(', ')}); write each tag in one alphabet`);
+  }
+  const repeated = tags.find((t, i) => tags.indexOf(t) !== i);
+  if (repeated) throw new Error(`tags: "${repeated}" is listed more than once`);
+  return tags;
 }
 
 function parseFrontmatter(text) {
@@ -148,6 +197,7 @@ async function loadPost(fileName) {
   const date = isoDate(data.date, 'date');
   const updated = data.updated ? isoDate(data.updated, 'updated') : null;
   if (updated && updated < date) throw new Error(`updated (${updated}) is before date (${date})`);
+  const tags = parseTags(data.tags);
   const today = new Date().toISOString().slice(0, 10);
   if (date > today) warn(`date ${date} is in the future — the page will show it as is`);
 
@@ -169,6 +219,7 @@ async function loadPost(fileName) {
     seoTitle: searchTitle,
     date,
     updated,
+    tags,
     description: data.description,
     image: data.image,
     imageAlt: data.image_alt,
