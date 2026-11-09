@@ -26,17 +26,19 @@ Articles live in `src/content/blog/` — one Markdown file per article (`<slug>.
 
 ## Form submissions
 
-The demo, waitlist, and contact forms send their data to `hello@vetcare.bg` via [Web3Forms](https://web3forms.com) — a client-side form relay, since this site has no backend of its own.
-
-All delivery config (destination email, endpoint, access key) lives in one place: the `VETCARE_CONTACT` object at the top of `assets/js/main.js`.
+The waitlist and contact forms send their data to `hello@vetcare.bg` via [Web3Forms](https://web3forms.com) (with hCaptcha), a client-side form relay, since this site has no backend of its own. The delivery config lives in the `VETCARE_CONTACT` object at the top of `assets/js/main.js`, which holds the live access key.
 
 ```js
 const VETCARE_CONTACT = {
   toEmail: 'hello@vetcare.bg',
   web3formsEndpoint: 'https://api.web3forms.com/submit',
-  web3formsAccessKey: 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY',
+  web3formsAccessKey: '…',
 };
 ```
+
+The demo form is different: it POSTs to the VetCare app's `/api/demo/request`. That URL comes from `<meta name="vetcare-demo-api">` in `index.html`, filled at image build time from `DEMO_API_URL`.
+
+Details are in [CLAUDE.md](./CLAUDE.md#form-submissions).
 
 ## Structure
 

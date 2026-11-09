@@ -690,6 +690,10 @@ button { font-family: inherit; }
   gap: 14px;
 }
 
+/* The email label (in a <div> with the .vc-form-row, so the gap above doesn't add to its 7px
+   margin) is left-aligned over the input, although .vc-waitlist-box centres the rest. */
+.vc-waitlist-form .vc-label { text-align: left; }
+
 /* ── hCaptcha ───────────────────────────────────────────── */
 /* The widget is a fixed 303x78 iframe injected into .h-captcha by web3forms/client/script.js.
    min-height reserves the space up front so the form doesn't jump when it finishes rendering. */
