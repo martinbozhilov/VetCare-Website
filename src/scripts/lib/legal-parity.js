@@ -10,8 +10,11 @@
 // and compared with the source's own markers. So words, block boundaries (two paragraphs merged
 // into one fail) and bold/italic are proven. Whitespace is collapsed for the terms and the DPA;
 // for the Commission's clauses no-break spaces are kept (they are the Official Journal's text,
-// down to the typo). Not covered: which tag a block is (h3 vs h4, p vs li) and which cell is in
-// which column.
+// down to the typo). Second, the whole visible text of each region (terms, DPA, clauses), in
+// reading order, must equal the composed source text with the emphasis markers stripped, so text
+// outside the block elements (an extra <div>, a bare text node, a paragraph repeated inside another
+// element, words after a label) fails too. Not covered: which tag a block is (h3 vs h4, p vs li) and
+// which cell is in which column.
 
 // Source lines that never reach the page: the clinic's own data (no clinic on /legal) and the
 // sections that only exist once a clinic has accepted.
@@ -90,6 +93,20 @@ function region(html, attr) {
   return m[2];
 }
 
+// The whole region: its complete visible text must equal the expected blocks joined in reading
+// order (emphasis markers stripped), whatever elements it sits in. `norm` collapses whitespace.
+function sameTextOrThrow(name, html, want, norm) {
+  const g = norm(visibleText(html));
+  const w = norm(want.join(' ').replace(/[*]/g, ''));
+  if (g === w) return;
+  let c = 0;
+  while (c < g.length && c < w.length && g[c] === w[c]) c += 1;
+  const around = (x) => JSON.stringify(x.slice(Math.max(0, c - 40), c + 50));
+  throw new Error(`parity (${name}, whole region): the visible text differs from the source at character ${c}
+  page:   ${around(g)}
+  source: ${around(w)}`);
+}
+
 // Blocks must match one for one: same count, each equal after `norm`.
 function sameBlocksOrThrow(name, got, want, norm) {
   const g = got.map(norm);
@@ -109,17 +126,22 @@ function checkLegalPage(html, legal) {
   const { terms, dpa, subProcessors, clausesText } = legal;
 
   // 1. The terms
-  sameBlocksOrThrow('terms', renderedBlocks(region(html, 'terms')),
-    expectedBlocks(terms.text, { values: terms.values }), loose);
+  const termsExpected = expectedBlocks(terms.text, { values: terms.values });
+  sameBlocksOrThrow('terms', renderedBlocks(region(html, 'terms')), termsExpected, loose);
+  sameTextOrThrow('terms', region(html, 'terms'), termsExpected, loose);
 
   // 2. The DPA, with its two includes expanded in place
   const spExpected = expectedBlocks(subProcessors.text, { values: subProcessors.values });
   const clausesExpected = expectedBlocks(clausesText);
-  sameBlocksOrThrow('dpa', renderedBlocks(region(html, 'dpa')),
-    expectedBlocks(dpa.text, { values: dpa.values, includes: { clauses: clausesExpected, 'sub-processors': spExpected } }), loose);
+  const dpaExpected = expectedBlocks(dpa.text, { values: dpa.values, includes: { clauses: clausesExpected, 'sub-processors': spExpected } });
+  sameBlocksOrThrow('dpa', renderedBlocks(region(html, 'dpa')), dpaExpected, loose);
+  sameTextOrThrow('dpa', region(html, 'dpa'), dpaExpected, loose);
+  // date tokens filled in the composed source (build-legal.js checks the page carries exactly this many)
+  legal.expectedDates = [...termsExpected, ...dpaExpected].join(String.fromCharCode(10)).split(terms.values.effectiveDate).length - 1;
 
   // 3. The Commission's clauses, every no-break space and dash included
   sameBlocksOrThrow('clauses', renderedBlocks(region(html, 'clauses')), clausesExpected, strict);
+  sameTextOrThrow('clauses', region(html, 'clauses'), clausesExpected, strict);
 
   // 4. Leaked syntax
   const old = html.match(/<section class="vc-legal-doc" aria-labelledby="stari-versii">([\s\S]*?)<\/section>/);

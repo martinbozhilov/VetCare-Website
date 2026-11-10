@@ -20,7 +20,7 @@ const { SRC, SITE } = require('./lib/pages');
 const {
   esc, glueDash, SITE_CARD, head, header, FOOTER,
 } = require('./lib/page-shell');
-const { loadLegal, NNBSP } = require('./lib/legal-texts');
+const { loadLegal } = require('./lib/legal-texts');
 const { checkLegalPage } = require('./lib/legal-parity');
 
 const LONG_DASH = /[—–]/;
@@ -227,11 +227,14 @@ async function main() {
   });
 
   checkLegalPage(html, legal);
-  // The app prints "9.11.2026" + U+202F + "г." (formatBgDate): the page must carry exactly that, and
-  // never the look-alike with an ordinary space.
-  const plainSpaced = legal.effectiveDateText.replace(NNBSP, ' ');
-  if (!html.includes(legal.effectiveDateText) || html.includes(plainSpaced)) {
-    throw new Error('legal.html: the effective date must appear with U+202F before "г." and never with an ordinary space');
+  // The app prints "9.11.2026" + U+202F + "г." (formatBgDate). Every date in the documents must be
+  // exactly that: as many as the date tokens filled during composition (checkLegalPage counts them
+  // in the composed source), and no date-shaped text left over in any other form (an ordinary or
+  // no-break space before "г.", no "г." at all).
+  const total = (html.match(/[0-9]{1,2}[.][0-9]{2}[.][0-9]{4}/g) || []).length;
+  const good = html.split(legal.effectiveDateText).length - 1;
+  if (good !== legal.expectedDates || total !== legal.expectedDates) {
+    throw new Error(`legal.html: ${legal.expectedDates} date(s) must appear as "${legal.effectiveDateText}" (U+202F before "г."), found ${good} in that form and ${total} date-shaped in all`);
   }
   emit(OUT_FILE, html);
   console.log(`✅ legal - terms v${legal.terms.version}, DPA v${legal.dpa.version}, sub-processors v${legal.subProcessors.version}, в сила от ${legal.effectiveDateText}`);
