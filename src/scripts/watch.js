@@ -11,24 +11,25 @@ const targets = [
   ['assets/css/icons.css', 'assets/css/icons.min.css'],
 ];
 
-// Articles: any change under content/blog/ (Markdown or images) re-runs scripts/build-blog.js. It
+// Generated pages: any change under content/blog/ (Markdown or images) re-runs
+// scripts/build-blog.js, and any change under content/legal/ re-runs scripts/build-legal.js. Each
 // runs as a child process so an edit to the generator itself takes effect on the next save, and the
-// watch is on the sources only — the generator writes to blog/, so watching that would loop.
-const BLOG_SOURCES = path.join(__dirname, '..', 'content', 'blog');
-function watchBlog() {
+// watch is on the sources only - the generators write to blog/ and legal.html, so watching those
+// would loop.
+function watchGenerated(sourceDir, script) {
   let timer = null;
   let running = false;
   let again = false;
   const run = () => {
     if (running) { again = true; return; }
     running = true;
-    spawn(process.execPath, [path.join(__dirname, 'build-blog.js')], { stdio: 'inherit' }).on('exit', () => {
+    spawn(process.execPath, [path.join(__dirname, script)], { stdio: 'inherit' }).on('exit', () => {
       running = false;
       if (again) { again = false; run(); }
     });
   };
   // Editors save in bursts (temp file, rename, touch), so wait for the burst to settle.
-  fs.watch(BLOG_SOURCES, { recursive: true }, () => {
+  fs.watch(path.join(__dirname, '..', 'content', sourceDir), { recursive: true }, () => {
     clearTimeout(timer);
     timer = setTimeout(run, 150);
   });
@@ -40,8 +41,9 @@ async function main() {
   );
 
   await Promise.all(contexts.map((c) => c.watch()));
-  watchBlog();
-  console.log(`Watching ${targets.map(([entry]) => entry).join(', ')} and content/blog/ for changes...`);
+  watchGenerated('blog', 'build-blog.js');
+  watchGenerated('legal', 'build-legal.js');
+  console.log(`Watching ${targets.map(([entry]) => entry).join(', ')}, content/blog/ and content/legal/ for changes...`);
 }
 
 main();

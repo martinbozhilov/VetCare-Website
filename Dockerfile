@@ -25,10 +25,11 @@ RUN npm run build
 #
 # Every page is rewritten, not just index.html: they all load the same four assets, and privacy.html
 # was once left out entirely, so it shipped uncacheable-busted references on every deploy. That
-# includes the generated blog pages (blog/*.html, from scripts/build-blog.js). Every page must keep
+# includes the generated blog pages (blog/*.html, from scripts/build-blog.js) and legal.html (from
+# scripts/build-legal.js). Every page must keep
 # the font preload line, or the grep loop below fails for it.
 RUN BUILD_ID=$(date +%s) && \
-    PAGES="index.html privacy.html 404.html $(ls blog/*.html)" && \
+    PAGES="index.html privacy.html 404.html legal.html $(ls blog/*.html)" && \
     sed -i "s/main.min.js/main.min.js?v=${BUILD_ID}/g" $PAGES && \
     sed -i "s/styles.min.css/styles.min.css?v=${BUILD_ID}/g" $PAGES && \
     sed -i "s/icons.min.css/icons.min.css?v=${BUILD_ID}/g" $PAGES && \
@@ -66,9 +67,10 @@ FROM nginx:1.27-alpine AS final
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # only the files the live page needs — no node_modules, scripts, package files or docs. content/ (the
-# blog's Markdown sources) stays behind too: blog/ is what it was built into.
+# blog's and the legal page's sources) stays behind too: blog/ and legal.html are what they were
+# built into.
 WORKDIR /usr/share/nginx/html
-COPY --from=build /app/index.html /app/privacy.html /app/404.html ./
+COPY --from=build /app/index.html /app/privacy.html /app/404.html /app/legal.html ./
 COPY --from=build /app/blog ./blog
 COPY --from=build /app/assets ./assets
 COPY --from=build /app/favicon.ico /app/favicon.svg /app/favicon-32.png /app/apple-touch-icon.png ./

@@ -1,0 +1,2 @@
+# The VetCare app's legal texts are copied byte for byte and checked against SHA-256 hashes: keep them LF on Windows checkouts (core.autocrlf), as in the app.
+src/content/legal/** text eol=lf

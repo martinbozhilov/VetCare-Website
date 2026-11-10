@@ -1,0 +1,24 @@
+{
+  "releases": [
+    {
+      "effectiveDate": "2026-11-09",
+      "terms": {
+        "version": 1,
+        "file": "terms-v1.md",
+        "sha256": "0b225a3e8f05bcc020509c87077faa0eb47525432ff4c8d2f727bcf040de5d63"
+      },
+      "dpa": {
+        "version": 1,
+        "file": "dpa-v1.md",
+        "sha256": "f982e27974829838a216da4cff6819caff6dfb1b0584259970348ba482ac9147",
+        "clauses": "dpa-v1-clauses.md",
+        "clausesSha256": "d02a22c65a0c53a78fc477d0b2d1d940ad1fe212dc2d388dccd94c1ba4d13e5b"
+      },
+      "subProcessors": {
+        "version": 1,
+        "file": "sub-processors-v1.md",
+        "sha256": "1e55ed70ee9dfb05558c2714fdb81a9993249febfaf847b875cbe8d5b5f93309"
+      }
+    }
+  ]
+}

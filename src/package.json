@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "blog": "node scripts/build-blog.js",
+    "legal": "node scripts/build-legal.js",
     "icons": "node scripts/subset-icons.js",
     "sitemap": "node scripts/gen-sitemap.js",
-    "build": "npm run blog && npm run icons && npm run sitemap && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
+    "build": "npm run blog && npm run legal && npm run icons && npm run sitemap && esbuild assets/js/main.js --minify --outfile=assets/js/main.min.js && esbuild assets/css/styles.css --minify --outfile=assets/css/styles.min.css && esbuild assets/css/icons.css --minify --outfile=assets/css/icons.min.css",
     "watch": "node scripts/watch.js",
     "serve": "npx serve -l 8001"
   },

@@ -7,3 +7,6 @@ docs
 # The blog's articles are Markdown too, and the image build renders them (npm run build). `*.md`
 # above only matches the repo root today; this keeps them in if it is ever widened to **/*.md.
 !src/content/blog/**
+# Same for the legal page: the VetCare app's texts (Markdown and the manifest) are rendered by the
+# image build (npm run build -> scripts/build-legal.js), so they must stay in.
+!src/content/legal/**

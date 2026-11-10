@@ -47,6 +47,7 @@ Details are in [CLAUDE.md](./CLAUDE.md#form-submissions).
 - `assets/css/styles.css` — all styles, organized by section
 - `assets/images/` — site imagery
 - `content/blog/` — blog articles (Markdown) and their images; `blog/` is generated from them by `scripts/build-blog.js`
+- `content/legal/` - the VetCare app's legal texts, copied unchanged and checked against the app's hashes; `legal.html` (`/legal`) is generated from them by `scripts/build-legal.js` (see [CLAUDE.md](./CLAUDE.md#legal-page))
 
 Everything above lives under the `src/` directory, which is the project root — `cd src` before running any `npm` command, and paths are relative to it.
 
