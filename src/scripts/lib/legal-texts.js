@@ -31,13 +31,16 @@ function legalTextHash(buf) {
 }
 
 // The app prints dates with DateExtensions.FormatDate = ToString("d", bg-BG) = d.MM.yyyy 'г'. on its
-// aspnet:10.0 image: "5.03.2027 г." (day unpadded, month padded, an ordinary space before "г.").
-// Written by hand rather than with Intl, whose output depends on Node's ICU data. The effective date
-// is re-checked against app.vetcare.bg before merge (PR checklist), which would catch a different
-// space character.
+// aspnet:10.0 image: "9.11.2026 г." with day unpadded, month padded and a NARROW NO-BREAK SPACE
+// (U+202F, not U+0020) before "г." (its DateExtensions.cs:27-29 says so: "an invisible narrow
+// no-break space"; measured with the app's own code on Windows and in mcr.microsoft.com/dotnet/aspnet:10.0,
+// ICU 74.2: code points 0036 202F 0433 002E). Written by hand rather than with Intl, whose output
+// depends on Node's ICU data (this machine's Node prints U+0020). scripts/build-legal.js fails if the
+// rendered page doesn't carry the date with U+202F.
+const NNBSP = String.fromCharCode(0x202f);
 function formatBgDate(iso) {
   const [y, m, d] = iso.split('-').map(Number);
-  return `${d}.${String(m).padStart(2, '0')}.${y} г.`;
+  return `${d}.${String(m).padStart(2, '0')}.${y}${NNBSP}г.`;
 }
 
 // ── Manifest ──────────────────────────────────────────────────────────────────────────────────
@@ -246,4 +249,4 @@ async function loadLegal() {
   };
 }
 
-module.exports = { LEGAL_DIR, LEGAL_SOURCES, normalizeLegalText, legalTextHash, formatBgDate, loadLegal };
+module.exports = { LEGAL_DIR, LEGAL_SOURCES, normalizeLegalText, legalTextHash, formatBgDate, NNBSP, loadLegal };

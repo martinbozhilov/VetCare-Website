@@ -20,7 +20,7 @@ const { SRC, SITE } = require('./lib/pages');
 const {
   esc, glueDash, SITE_CARD, head, header, FOOTER,
 } = require('./lib/page-shell');
-const { loadLegal } = require('./lib/legal-texts');
+const { loadLegal, NNBSP } = require('./lib/legal-texts');
 const { checkLegalPage } = require('./lib/legal-parity');
 
 const LONG_DASH = /[—–]/;
@@ -227,6 +227,12 @@ async function main() {
   });
 
   checkLegalPage(html, legal);
+  // The app prints "9.11.2026" + U+202F + "г." (formatBgDate): the page must carry exactly that, and
+  // never the look-alike with an ordinary space.
+  const plainSpaced = legal.effectiveDateText.replace(NNBSP, ' ');
+  if (!html.includes(legal.effectiveDateText) || html.includes(plainSpaced)) {
+    throw new Error('legal.html: the effective date must appear with U+202F before "г." and never with an ordinary space');
+  }
   emit(OUT_FILE, html);
   console.log(`✅ legal - terms v${legal.terms.version}, DPA v${legal.dpa.version}, sub-processors v${legal.subProcessors.version}, в сила от ${legal.effectiveDateText}`);
 }

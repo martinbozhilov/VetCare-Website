@@ -3,51 +3,82 @@
 //
 // It is deliberately independent of the parser in legal-markdown.js: it works on the raw source
 // lines and on the delivered HTML, so a bug in the parser (a dropped line, a merged paragraph, a
-// leaked marker) can't also hide in the check. The tag-stripped text of each document, in reading
-// order, must equal the composed source: for the terms and the DPA with whitespace collapsed, for
-// the Commission's clauses with no-break spaces kept (they are the Official Journal's text, down to
-// the typo).
+// leaked marker) can't also hide in the check. The composed source is cut into blocks (every line
+// is one: a heading, a paragraph, a list item, each table cell, a label, the content after a
+// label) and each must equal, in reading order, the matching rendered block element (h2-h6, p, li,
+// th, td, and the label span), with the emphasis kept: <strong>/<em> are mapped back to ** and *
+// and compared with the source's own markers. So words, block boundaries (two paragraphs merged
+// into one fail) and bold/italic are proven. Whitespace is collapsed for the terms and the DPA;
+// for the Commission's clauses no-break spaces are kept (they are the Official Journal's text,
+// down to the typo). Not covered: which tag a block is (h3 vs h4, p vs li) and which cell is in
+// which column.
 
 // Source lines that never reach the page: the clinic's own data (no clinic on /legal) and the
 // sections that only exist once a clinic has accepted.
 const DROPPED_LINE = /\{\{(clinic\.(name|address)|#contact|#acceptance)\}\}/;
 
-// What the page must say for a source text: syntax stripped, tokens filled, includes expanded.
-// `includes` maps an include name to the expected text of what it expands to.
-function expectedText(text, { values = {}, includes = {} } = {}) {
+// What the page must say for a source text, as a list of blocks: syntax stripped (emphasis markers
+// kept), tokens filled, includes expanded. `includes` maps an include name to the block list of
+// what it expands to.
+function expectedBlocks(text, { values = {}, includes = {} } = {}) {
   const out = [];
   for (const raw of text.split('\n')) {
     const inc = raw.replace(/^[ \t]+|[ \t]+$/g, '').match(/^\{\{> ([a-z-]+)\}\}$/);
     if (inc) {
       if (!(inc[1] in includes)) throw new Error(`parity: no expansion given for the include "${inc[1]}"`);
-      out.push(includes[inc[1]]);
+      out.push(...includes[inc[1]]);
       continue;
     }
     if (DROPPED_LINE.test(raw)) continue;
     if (/^\|[ \t:|-]+\|$/.test(raw)) continue; // a table delimiter row
-    let s = raw
+    const s = raw
       .replace(/^[ \t]+/, '') // spaces and tabs only, never U+00A0
       .replace(/^#{1,6}[ \t]+/, '')
       .replace(/^- +/, '')
       .replace(/^: +/, '')
-      .replace(/\*/g, '')
-      .replace(/\|/g, ' ');
-    s = s.replace(/\{\{(version|effectiveDate|lastChanged)\}\}/g, (all, k) => values[k]);
-    out.push(s);
+      .replace(/\{\{(version|effectiveDate|lastChanged)\}\}/g, (all, k) => values[k]);
+    if (/^\|.*\|$/.test(s)) {
+      out.push(...s.slice(1, -1).split('|')); // a table row: one block per cell
+    } else {
+      out.push(s);
+    }
   }
-  return out.join('\n');
+  return out.filter((b) => b.trim() !== '');
 }
 
-// Reading-order text of an HTML fragment. Inline tags vanish without a trace, every other tag is
-// a word break, and only the four entities esc() produces are decoded.
-function visibleText(html) {
-  return html
-    .replace(/<\/?(strong|em|a)\b[^>]*>/g, '')
-    .replace(/<[^>]*>/g, ' ')
+function decode(s) {
+  return s
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&');
+}
+
+// The page's own blocks of an HTML fragment, in reading order, with emphasis written as markers.
+// `a` tags vanish (the words stay), every other tag is dropped, and only the four entities esc()
+// produces are decoded.
+function renderedBlocks(html) {
+  const out = [];
+  const re = /<(h[2-6]|p|li|th|td|span)\b([^>]*)>([\s\S]*?)<\/\1>/g;
+  for (const m of html.matchAll(re)) {
+    if (m[1] === 'span' && !/\bvc-legal-item-label\b/.test(m[2])) continue;
+    const inner = m[3]
+      .replace(/<strong><em>/g, '***').replace(/<\/em><\/strong>/g, '***')
+      .replace(/<strong>|<\/strong>/g, '**')
+      .replace(/<em>|<\/em>/g, '*')
+      .replace(/<\/?a\b[^>]*>/g, '')
+      .replace(/<[^>]*>/g, '');
+    out.push(decode(inner));
+  }
+  return out;
+}
+
+// Reading-order text of an HTML fragment (leak checks). Inline tags vanish without a trace, every
+// other tag is a word break.
+function visibleText(html) {
+  return decode(html
+    .replace(/<\/?(strong|em|a)\b[^>]*>/g, '')
+    .replace(/<[^>]*>/g, ' '));
 }
 
 const loose = (s) => s.replace(/[\s ]+/g, ' ').trim();
@@ -59,29 +90,36 @@ function region(html, attr) {
   return m[2];
 }
 
-function sameOrThrow(name, got, want) {
-  if (got === want) return;
-  let i = 0;
-  while (i < got.length && i < want.length && got[i] === want[i]) i += 1;
-  const around = (s) => JSON.stringify(s.slice(Math.max(0, i - 40), i + 40));
-  throw new Error(`parity (${name}): the page differs from the source at character ${i}\n  page:   ${around(got)}\n  source: ${around(want)}`);
+// Blocks must match one for one: same count, each equal after `norm`.
+function sameBlocksOrThrow(name, got, want, norm) {
+  const g = got.map(norm);
+  const w = want.map(norm);
+  const around = (s) => JSON.stringify(s.length > 90 ? `${s.slice(0, 90)}...` : s);
+  for (let i = 0; i < Math.max(g.length, w.length); i += 1) {
+    if (g[i] === w[i]) continue;
+    let c = 0;
+    const a = g[i] || '';
+    const b = w[i] || '';
+    while (c < a.length && c < b.length && a[c] === b[c]) c += 1;
+    throw new Error(`parity (${name}): block ${i + 1} of ${w.length} (page has ${g.length}) differs from the source at character ${c}\n  page:   ${around(a)}\n  source: ${around(b)}`);
+  }
 }
 
 function checkLegalPage(html, legal) {
   const { terms, dpa, subProcessors, clausesText } = legal;
 
   // 1. The terms
-  sameOrThrow('terms', loose(visibleText(region(html, 'terms'))),
-    loose(expectedText(terms.text, { values: terms.values })));
+  sameBlocksOrThrow('terms', renderedBlocks(region(html, 'terms')),
+    expectedBlocks(terms.text, { values: terms.values }), loose);
 
   // 2. The DPA, with its two includes expanded in place
-  const spExpected = expectedText(subProcessors.text, { values: subProcessors.values });
-  const clausesExpected = expectedText(clausesText);
-  sameOrThrow('dpa', loose(visibleText(region(html, 'dpa'))),
-    loose(expectedText(dpa.text, { values: dpa.values, includes: { clauses: clausesExpected, 'sub-processors': spExpected } })));
+  const spExpected = expectedBlocks(subProcessors.text, { values: subProcessors.values });
+  const clausesExpected = expectedBlocks(clausesText);
+  sameBlocksOrThrow('dpa', renderedBlocks(region(html, 'dpa')),
+    expectedBlocks(dpa.text, { values: dpa.values, includes: { clauses: clausesExpected, 'sub-processors': spExpected } }), loose);
 
   // 3. The Commission's clauses, every no-break space and dash included
-  sameOrThrow('clauses', strict(visibleText(region(html, 'clauses'))), strict(clausesExpected));
+  sameBlocksOrThrow('clauses', renderedBlocks(region(html, 'clauses')), clausesExpected, strict);
 
   // 4. Leaked syntax
   const old = html.match(/<section class="vc-legal-doc" aria-labelledby="stari-versii">([\s\S]*?)<\/section>/);
@@ -118,4 +156,4 @@ function checkLegalPage(html, legal) {
   }
 }
 
-module.exports = { expectedText, visibleText, loose, strict, region, checkLegalPage };
+module.exports = { expectedBlocks, renderedBlocks, visibleText, loose, strict, region, checkLegalPage };

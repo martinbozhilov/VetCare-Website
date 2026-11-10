@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://vetcare.bg/</loc>
-    <lastmod>2026-11-10</lastmod>
+    <lastmod>2026-11-11</lastmod>
     <image:image>
       <image:loc>https://vetcare.bg/assets/images/rex-kolaj.png</image:loc>
       <image:title>Рекс - кучето, заради което създадохме VetCare</image:title>
@@ -31,7 +31,7 @@
   </url>
   <url>
     <loc>https://vetcare.bg/legal</loc>
-    <lastmod>2026-11-10</lastmod>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://vetcare.bg/privacy.html</loc>
