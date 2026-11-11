@@ -13,8 +13,9 @@
 // and markdown-it's tables accept forms that Markdig (PHP Markdown Extra syntax) refuses or reads
 // differently, so a handful of RAW-LINE CHECKS run against the source lines the tokens point at:
 // a label's previous line, the exact ":" marker and the four-space indentation of an item's content
-// (markdown-it silently joins a less indented line to the paragraph above), the nesting depth, the "|" rows of a table, and edge spaces
-// (markdown-it trims with String.trim(), which also drops U+00A0; Markdig does not). The backslash
+// (markdown-it silently joins a less indented line to the paragraph above), the nesting depth, the
+// "|" rows of a table, and edge spaces (markdown-it trims with String.trim(), which also drops
+// U+00A0; Markdig does not). The backslash
 // and entity refusals also read the raw source of each block, since markdown-it would turn an
 // escape or an entity into plain text.
 //

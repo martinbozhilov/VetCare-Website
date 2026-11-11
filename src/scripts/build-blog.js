@@ -166,12 +166,8 @@ function picture(image, alt, { lazy = false, priority = false, cls = '', sizes =
 }
 
 // ── Markdown ──────────────────────────────────────────────────────────────────────────────────
-// markdown-it, configured to give what the GFM renderer used before gave, so the switch changes no
-// article.
-// The differences that are left, for whoever writes the next article: a task list ("- [ ] x") shows
-// the text, not a checkbox; a named entity ("&copy;") comes out as the character, not as the
-// entity; a link or image URL is percent-encoded; and the whitespace between block elements differs
-// (the same HTML, not the same bytes) in tables, loose and nested lists and after an HTML comment.
+// markdown-it with GFM's output: tables (alignment as an `align` attribute), ~~strikethrough~~ as
+// <del>, autolinks and raw HTML. Task lists ("- [ ] x") are not supported and stay plain text.
 function makeMarkdown() {
   const md = new MarkdownIt({ html: true, linkify: true });
   // Bare "http(s)://", "www." and e-mail addresses become links, as in GFM, but a bare domain
@@ -179,7 +175,7 @@ function makeMarkdown() {
   // it is switched on and its schemaless matches are filtered down to the "www." ones.
   md.linkify.set({ fuzzyLink: true });
   const match = md.linkify.match.bind(md.linkify);
-  md.linkify.match = (text) => (match(text) || []).filter((m) => m.schema !== '' || /^www./i.test(m.raw));
+  md.linkify.match = (text) => (match(text) || []).filter((m) => m.schema !== '' || /^www\./i.test(m.raw));
 
   const rules = md.renderer.rules;
   rules.s_open = () => '<del>';
@@ -212,16 +208,9 @@ function makeMarkdown() {
     const alt = t.content;
     const caption = t.attrGet('title') || alt;
     const pic = picture(env.ready.get(t.attrGet('src')), alt, { lazy: true }, '  ');
-    if (!caption) return `<figure>
-${pic}
-</figure>
-`;
+    if (!caption) return `<figure>\n${pic}\n</figure>\n`;
     const hidden = caption === alt ? ' aria-hidden="true"' : '';
-    return `<figure>
-${pic}
-  <figcaption${hidden}>${esc(caption)}</figcaption>
-</figure>
-`;
+    return `<figure>\n${pic}\n  <figcaption${hidden}>${esc(caption)}</figcaption>\n</figure>\n`;
   };
   return md;
 }
