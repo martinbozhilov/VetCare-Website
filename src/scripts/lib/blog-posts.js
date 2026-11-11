@@ -17,6 +17,7 @@ const path = require('path');
 const crypto = require('crypto');
 const sharp = require('sharp');
 const { SRC, SITE } = require('./pages');
+const { LONG_DASH } = require('./page-shell');
 
 const CONTENT_DIR = path.join(SRC, 'content', 'blog');
 const IMAGE_PREFIX = '/blog/images/';
@@ -45,10 +46,6 @@ const FIELDS = {
 // describe it, so its size is fixed rather than merely recommended. See docs/brand/og-image.html for
 // why it is an opaque JPG; WhatsApp silently drops previews over 600 KB.
 const COVER = { width: 1200, height: 630, hardLimit: 600 * 1024, softLimit: 300 * 1024 };
-
-// House style for everything a visitor reads: no em dash (—) or en dash (–). The site's copy uses a
-// hyphen with spaces (" - ") instead, so an article that brings its own dashes fails the build.
-const LONG_DASH = /[—–]/;
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const RESERVED_SLUGS = new Set(['index', 'images']); // blog/index.html, blog/images/
@@ -249,4 +246,4 @@ async function loadPosts() {
   return posts.sort((a, b) => (a.date === b.date ? a.slug.localeCompare(b.slug) : a.date < b.date ? 1 : -1));
 }
 
-module.exports = { CONTENT_DIR, IMAGE_PREFIX, LONG_DASH, loadPosts, imageSource, withVersion, versionedImage };
+module.exports = { CONTENT_DIR, IMAGE_PREFIX, loadPosts, imageSource, withVersion, versionedImage };

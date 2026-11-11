@@ -11,8 +11,8 @@
 // again (`npm run build`), which is safe because the output is deterministic — no timestamps and no
 // git: dateModified comes from the article's `updated` field, not from history.
 //
-// The page shell (head, header, footer, consent banner) is a copy of privacy.html / 404.html with
-// root-absolute URLs. A nav or footer change has to be made here too — see CLAUDE.md, "Blog".
+// The page shell (head, header, footer, consent banner) lives in lib/page-shell.js, shared with /legal.
+// A nav or footer change has to be made there and in the three hand-written pages — see CLAUDE.md.
 //
 // Run `npm run blog` (or `npm run build`, which calls it first). Article format: see
 // scripts/lib/blog-posts.js.
@@ -20,9 +20,13 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const MarkdownIt = require('markdown-it');
 const { SRC, SITE } = require('./lib/pages');
 const {
-  CONTENT_DIR, IMAGE_PREFIX, LONG_DASH, loadPosts, imageSource, withVersion,
+  esc, glueDash, LONG_DASH, writeIfChanged, SITE_CARD, head, header, FOOTER,
+} = require('./lib/page-shell');
+const {
+  CONTENT_DIR, IMAGE_PREFIX, loadPosts, imageSource, withVersion,
 } = require('./lib/blog-posts');
 
 const OUT_DIR = path.join(SRC, 'blog');
@@ -33,8 +37,6 @@ const LOGO = `${SITE}/assets/images/vetcare-logo-512.png`;
 // would resolve against each article's own URL. checkHomeOrganization() fails the build if
 // index.html's node ever carries a different id.
 const ORG_ID = `${SITE}/#organization`;
-// The list page has no image of its own, so it shares the site's link-preview card.
-const SITE_CARD = { url: `${SITE}/assets/images/vetcare-og.jpg`, alt: 'Екранът с пациентите във VetCare' };
 const BLOG_INTRO = 'Практични статии за работата във ветеринарната клиника';
 // WebP companions of in-text images are capped at twice the 1160px content width (.vc-container);
 // the cover is already 1200px wide and is never resized.
@@ -48,20 +50,12 @@ const formatDate = (iso) => {
   return `${d} ${MONTHS[m - 1]} ${y}`;
 };
 
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-// The site writes a dash as " - " (no em or en dashes). Where a line wraps at the space before it,
-// the next line starts with "- " and reads like a list bullet, so in visible text the space before
-// the dash is a no-break space. Meta tags and JSON-LD keep the plain text. The no-break space is
-// spelled out rather than typed, because a literal one is invisible and editors normalise it away.
-const NBSP = String.fromCharCode(0xa0);
-const glueDash = (s) => s.replace(/ - /g, `${NBSP}- `);
 // JSON inside <script>: a "</script>" in any value would end the block early.
 const jsonLd = (obj) => JSON.stringify(obj, null, 2).replace(/</g, '\\u003c');
 const rel = (file) => path.relative(SRC, file).replace(/\\/g, '/');
 
 // ── Output bookkeeping ────────────────────────────────────────────────────────────────────────
-// Files are only rewritten when their bytes change, so an unchanged build leaves mtimes alone and
-// `npm run watch` doesn't see its own output as an edit.
+// Every file goes through writeIfChanged (lib/page-shell.js); `written` is what removeStale keeps.
 const written = new Set();
 function emit(file, content) {
   // House style: no em or en dashes in anything a visitor reads, the site uses " - " instead.
@@ -70,10 +64,7 @@ function emit(file, content) {
     throw new Error(`${rel(file)}: the page text contains a long dash (— or –); use " - " instead`);
   }
   written.add(path.resolve(file));
-  const buf = Buffer.isBuffer(content) ? content : Buffer.from(content);
-  if (fs.existsSync(file) && fs.readFileSync(file).equals(buf)) return;
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, buf);
+  writeIfChanged(file, content);
 }
 
 function removeStale(dir) {
@@ -171,235 +162,101 @@ function picture(image, alt, { lazy = false, priority = false, cls = '', sizes =
 }
 
 // ── Markdown ──────────────────────────────────────────────────────────────────────────────────
-// marked is ESM-only, hence the dynamic import from this CommonJS script.
-let markedModule = null;
-async function renderMarkdown(post) {
-  if (!markedModule) markedModule = await import('marked');
-  const md = new markedModule.Marked({ gfm: true });
+// markdown-it with GFM's output: tables (alignment as an `align` attribute), ~~strikethrough~~ as
+// <del>, autolinks and raw HTML. Task lists ("- [ ] x") are not supported and stay plain text.
+// Strikethrough is "~~x~~" only: a single "~" stays a literal tilde (marked also took "~x~"). The
+// marketing drafts write "~70" and "~950; ~400" for "about", and a single-tilde rule would strike
+// the text between two such numbers through.
+function makeMarkdown() {
+  const md = new MarkdownIt({ html: true, linkify: true });
+  // Bare "http(s)://", "www." and e-mail addresses become links, as in GFM, but a bare domain
+  // ("vetcare.bg") must not: linkify-it's fuzzy matching is what finds "www." and a domain alike, so
+  // it is on by default (fuzzyLink) and its schemaless matches are filtered down to the "www." ones.
+  const match = md.linkify.match.bind(md.linkify);
+  md.linkify.match = (text) => (match(text) || []).filter((m) => m.schema !== '' || /^www\./i.test(m.raw));
 
-  const tokens = md.lexer(post.body);
-  const images = [];
-  md.walkTokens(tokens, (t) => {
-    // The page already has its one H1 — the title from the frontmatter.
-    if (t.type === 'heading' && t.depth === 1) {
-      throw new Error(`${post.sourceFile}: "# ${t.text}" is an H1; the title is the page's only H1 — use ## for sections`);
+  const rules = md.renderer.rules;
+  rules.s_open = () => '<del>';
+  rules.s_close = () => '</del>';
+  rules.hardbreak = () => '<br>';
+  // GFM's table alignment is an attribute, markdown-it's an inline style (and this site has none).
+  const align = (tokens, i, options, env, self) => {
+    const t = tokens[i];
+    const style = t.attrGet('style');
+    if (style) {
+      t.attrs = t.attrs.filter((a) => a[0] !== 'style');
+      t.attrSet('align', style.replace(/^text-align:/, ''));
     }
-    if (t.type === 'image') images.push(t.href);
-    // Plain text only: code spans and URLs are other token types, so they keep their spaces.
-    if (t.type === 'text') t.text = glueDash(t.text);
-  });
-  const ready = new Map();
+    return self.renderToken(tokens, i, options);
+  };
+  rules.th_open = align;
+  rules.td_open = align;
+  // The apostrophe is written &#39; in text and code, as GFM renderers write it (attributes keep
+  // markdown-it's own escaping).
+  rules.text = (tokens, i) => esc(tokens[i].content).replace(/'/g, '&#39;');
+  for (const name of ['code_inline', 'code_block', 'fence']) {
+    const base = rules[name];
+    rules[name] = (...args) => base(...args).replace(/'/g, '&#39;');
+  }
+  // The image and figure rules read what renderMarkdown prepared for this article from `env`.
+  rules.image = (tokens, i, options, env) => {
+    const t = tokens[i];
+    return picture(env.ready.get(t.attrGet('src')), t.content, { lazy: true });
+  };
+  // An image alone in its paragraph is a captioned figure. The caption is the image's title if it
+  // has one (`![alt](src "caption")`), else its alt text, and when it repeats the alt it is hidden
+  // from screen readers, which would otherwise read the same sentence twice.
+  rules.vc_figure = (tokens, i, options, env) => {
+    const t = tokens[i].meta;
+    const alt = t.content;
+    const caption = t.attrGet('title') || alt;
+    const pic = picture(env.ready.get(t.attrGet('src')), alt, { lazy: true }, '  ');
+    if (!caption) return `<figure>\n${pic}\n</figure>\n`;
+    const hidden = caption === alt ? ' aria-hidden="true"' : '';
+    return `<figure>\n${pic}\n  <figcaption${hidden}>${esc(caption)}</figcaption>\n</figure>\n`;
+  };
+  return md;
+}
+const markdown = makeMarkdown();
+
+async function renderMarkdown(post) {
+  const env = { ready: new Map() };
+  const tokens = markdown.parse(post.body, env);
+  const images = [];
+  for (let i = 0; i < tokens.length; i += 1) {
+    const t = tokens[i];
+    // The page already has its one H1 — the title from the frontmatter.
+    if (t.type === 'heading_open' && t.tag === 'h1') {
+      throw new Error(`${post.sourceFile}: "# ${tokens[i + 1].content}" is an H1; the title is the page's only H1 — use ## for sections`);
+    }
+    if (t.type !== 'inline') continue;
+    for (const c of t.children) {
+      if (c.type === 'image') images.push(c.attrGet('src'));
+      // Plain text only: code spans, URLs and an image's alt are other tokens, so they keep their spaces.
+      if (c.type === 'text') c.content = glueDash(c.content);
+    }
+  }
   for (const href of images) {
     try {
-      ready.set(href, await prepareImage(href, { maxWidth: INLINE_MAX_WIDTH }));
+      env.ready.set(href, await prepareImage(href, { maxWidth: INLINE_MAX_WIDTH }));
     } catch (err) {
       throw new Error(`${post.sourceFile}: ${err.message}`);
     }
   }
 
-  // An image alone in its paragraph becomes a captioned figure. The caption is the image's title
-  // if it has one (`![alt](src "caption")`), else its alt text — and when it repeats the alt it is
-  // hidden from screen readers, which would otherwise read the same sentence twice.
-  const figure = (t) => {
-    const caption = t.title || t.text;
-    const pic = picture(ready.get(t.href), t.text, { lazy: true }, '  ');
-    if (!caption) return `<figure>\n${pic}\n</figure>\n`;
-    const hidden = caption === t.text ? ' aria-hidden="true"' : '';
-    return `<figure>\n${pic}\n  <figcaption${hidden}>${esc(caption)}</figcaption>\n</figure>\n`;
-  };
-
-  md.use({
-    renderer: {
-      paragraph(token) {
-        const parts = token.tokens.filter((t) => !(t.type === 'text' && !t.text.trim()));
-        if (parts.length === 1 && parts[0].type === 'image') return figure(parts[0]);
-        return false; // marked's default
-      },
-      image(token) {
-        return picture(ready.get(token.href), token.text, { lazy: true });
-      },
-    },
-  });
-  return md.parser(tokens);
+  // A paragraph that holds one image (whitespace-only text ignored) becomes a figure token. A
+  // paragraph inside a tight list is hidden and keeps its image inline, as before.
+  for (let i = 0; i + 2 < tokens.length; i += 1) {
+    if (tokens[i].type !== 'paragraph_open' || tokens[i].hidden) continue;
+    const parts = tokens[i + 1].children.filter((c) => !(c.type === 'text' && !c.content.trim()));
+    if (parts.length !== 1 || parts[0].type !== 'image') continue;
+    const figure = new tokens[i].constructor('vc_figure', '', 0);
+    figure.block = true;
+    figure.meta = parts[0];
+    tokens.splice(i, 3, figure);
+  }
+  return markdown.renderer.render(tokens, markdown.options, env);
 }
-
-// ── Page shell ────────────────────────────────────────────────────────────────────────────────
-// Mirrors privacy.html / 404.html. Every URL is root-absolute: pages live one directory down and
-// are served without an extension, so relative URLs would resolve against /blog/.
-function head({ title, description, canonical, ogType, ogTitle, image, imageAlt, extra = '', source }) {
-  return `<!DOCTYPE html>
-<!-- GENERATED by scripts/build-blog.js from ${source} — do not edit; run \`npm run blog\`. -->
-<html lang="bg">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>${esc(title)}</title>
-  <meta name="description" content="${esc(description)}">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <link rel="canonical" href="${esc(canonical)}">
-
-  <meta property="og:type" content="${ogType}">
-  <meta property="og:url" content="${esc(canonical)}">
-  <meta property="og:title" content="${esc(ogTitle)}">
-  <meta property="og:description" content="${esc(description)}">
-  <meta property="og:locale" content="bg_BG">
-  <meta property="og:site_name" content="VetCare">
-  <meta property="og:image" content="${esc(image)}">
-  <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${esc(imageAlt)}">
-${extra}  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${esc(ogTitle)}">
-  <meta name="twitter:description" content="${esc(description)}">
-  <meta name="twitter:image" content="${esc(image)}">
-  <meta name="twitter:image:alt" content="${esc(imageAlt)}">
-
-  <meta name="theme-color" content="#207885">
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
-
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-
-  <!-- Self-hosted icon subset — see the matching block in index.html for why it isn't deferred. -->
-  <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/tabler-icons-subset.woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/css/icons.min.css">
-
-  <link rel="preconnect" href="https://eu.i.posthog.com">
-  <link rel="preconnect" href="https://eu-assets.i.posthog.com">
-  <link rel="stylesheet" href="/assets/css/styles.min.css">
-
-  <style>[x-cloak]{display:none!important}</style>
-  <script defer src="/assets/js/main.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-`;
-}
-
-const NAV = [
-  ['/#kak-raboti', 'Как работи'],
-  ['/#polzi', 'Ползи'],
-  ['/#istoriya', 'История'],
-  ['/#ceni', 'Цени'],
-  ['/#kontakti', 'Контакти'],
-];
-
-// `current` is the aria-current value of the Блог link: "page" on /blog itself, "true" on an
-// article (inside the blog, but not the blog page).
-function header(current) {
-  const desktop = NAV.map(([href, label]) => `      <a href="${href}" class="vc-nav-link">${label}</a>\n`).join('');
-  const mobile = NAV.map(([href, label]) => `    <a href="${href}" @click="menuOpen = false" class="vc-mobile-menu-link">${label}</a>\n`).join('');
-  return `<body x-data="vetcare">
-
-<a class="vc-skip-link" href="#main-content">Прескочете към съдържанието</a>
-
-<!-- HEADER -->
-<header class="vc-header" :class="{ 'is-scrolled': scrolled, 'is-open': menuOpen }"
-  @click.outside="menuOpen = false" @keydown.escape.window="menuOpen = false">
-  <div class="vc-header-inner">
-    <a href="/" class="vc-logo">
-      <img src="/assets/images/rex-icon.svg" alt="VetCare лого - дигиталният Рекс" width="34" height="38">
-      <span class="vc-logo-text">
-        <span class="vc-logo-name">VetCare</span>
-        <span class="vc-logo-sub">VETERINARY SOFTWARE</span>
-      </span>
-    </a>
-
-    <nav class="vc-nav-desktop" aria-label="Главна навигация">
-${desktop}      <a href="/blog" class="vc-nav-link is-active" aria-current="${current}">Блог</a>
-      <a href="/#demo" class="vc-cta-btn">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
-    </nav>
-
-    <button @click="menuOpen = !menuOpen" :aria-label="menuOpen ? 'Затворете менюто' : 'Отворете менюто'"
-      :aria-expanded="menuOpen.toString()" aria-controls="vc-mobile-menu" class="vc-hamburger">
-      <i :class="menuOpen ? 'ti ti-x' : 'ti ti-menu-2'" aria-hidden="true"></i>
-    </button>
-  </div>
-
-  <nav x-show="menuOpen" x-transition.opacity.duration.200ms id="vc-mobile-menu" class="vc-mobile-menu"
-    aria-label="Мобилна навигация" style="display:none">
-${mobile}    <a href="/blog" @click="menuOpen = false" class="vc-mobile-menu-link is-active" aria-current="${current}">Блог</a>
-    <a href="/#demo" @click="menuOpen = false" class="vc-mobile-cta">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
-  </nav>
-</header>
-`;
-}
-
-const FOOTER = `
-  <!-- FOOTER -->
-  <footer class="vc-footer">
-    <div class="vc-footer-inner">
-      <div class="vc-footer-top">
-        <div class="vc-footer-brand">
-          <div class="vc-footer-logo">
-            <img src="/assets/images/rex-icon.svg" alt="VetCare лого" width="34" height="40">
-            <span class="vc-footer-logo-text"><span class="vc-footer-logo-name">VetCare</span><span class="vc-footer-logo-sub">VETERINARY SOFTWARE</span></span>
-          </div>
-          <p class="vc-footer-tagline">Софтуер за ветеринарни клиники. Основните функции са безплатни.</p>
-          <ul class="vc-footer-social">
-            <li>
-              <a href="https://www.facebook.com/vetcare.bg" target="_blank" rel="noopener" class="vc-social-btn"
-                aria-label="VetCare във Facebook (нов раздел)"><i class="ti ti-brand-facebook" aria-hidden="true"></i></a>
-            </li>
-            <li>
-              <a href="https://www.linkedin.com/company/vetcare-bg" target="_blank" rel="noopener" class="vc-social-btn"
-                aria-label="VetCare в LinkedIn (нов раздел)"><i class="ti ti-brand-linkedin" aria-hidden="true"></i></a>
-            </li>
-          </ul>
-        </div>
-        <nav class="vc-footer-nav" aria-label="Навигация">
-          <span class="vc-footer-nav-heading">Навигация</span>
-          <a href="/#kak-raboti" class="vc-footer-nav-link">Как работи</a>
-          <a href="/#polzi" class="vc-footer-nav-link">Ползи</a>
-          <a href="/#istoriya" class="vc-footer-nav-link">История</a>
-          <a href="/#ceni" class="vc-footer-nav-link">Цени</a>
-          <a href="/blog" class="vc-footer-nav-link">Блог</a>
-        </nav>
-        <nav class="vc-footer-nav" aria-label="Връзки">
-          <span class="vc-footer-nav-heading">Връзка</span>
-          <a href="/#demo" class="vc-footer-nav-link">Пробвайте демо</a>
-          <a href="/#waitlist" class="vc-footer-nav-link">Ранна покана</a>
-          <a href="/#kontakti" class="vc-footer-nav-link">Контакти</a>
-          <a href="mailto:hello@vetcare.bg" class="vc-footer-nav-link">hello@vetcare.bg</a>
-        </nav>
-      </div>
-      <div class="vc-footer-bottom">
-        <!-- The literal year is the pre-hydration / no-JS fallback; Alpine overwrites it on init. -->
-        <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
-        <span class="vc-footer-sep" aria-hidden="true">·</span>
-        <a href="/privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
-        <span class="vc-footer-sep" aria-hidden="true">·</span>
-        <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
-      </div>
-    </div>
-  </footer>
-
-<button type="button" x-show="scrollProgress > 0.15 && !showConsent" x-transition.opacity.duration.200ms
-  style="display:none" @click="scrollToTop()" class="vc-to-top" aria-label="Обратно към началото">
-  <i class="ti ti-arrow-up" aria-hidden="true"></i>
-</button>
-
-<div x-show="showConsent" style="display:none" class="vc-consent" role="dialog" aria-live="polite" aria-label="Съгласие за бисквитки">
-  <p class="vc-consent-text">
-    Използваме бисквитки и анализ на посещенията, за да подобряваме VetCare. Данните се събират само след вашето съгласие. Повече в
-    <a href="/privacy.html" class="vc-consent-link">политиката за поверителност</a>.
-  </p>
-  <div class="vc-consent-actions">
-    <button type="button" @click="declineAnalytics()" class="vc-consent-btn vc-consent-btn--decline">Отказвам</button>
-    <button type="button" @click="acceptAnalytics()" class="vc-consent-btn">Приемам</button>
-  </div>
-</div>
-
-</body>
-</html>
-`;
 
 const timeTag = (iso) => `<time datetime="${iso}">${formatDate(iso)}</time>`;
 const indentBlock = (html, pad) => html.trimEnd().split('\n').map((l) => (l ? pad + l : l)).join('\n');
@@ -454,12 +311,14 @@ async function articlePage(post) {
     imageAlt: post.imageAlt,
     extra,
     source: post.sourceFile,
+    generator: 'scripts/build-blog.js',
+    command: 'npm run blog',
   }) + `
   <script type="application/ld+json">
 ${indentBlock(jsonLd(ld), '  ')}
   </script>
 </head>
-${header('true')}
+${header({ blog: 'true' })}
 <main id="main-content" tabindex="-1">
 
   <!-- ARTICLE -->
@@ -527,8 +386,10 @@ ${img}
     image: SITE_CARD.url,
     imageAlt: SITE_CARD.alt,
     source: 'content/blog/*.md',
+    generator: 'scripts/build-blog.js',
+    command: 'npm run blog',
   }) + `</head>
-${header('page')}
+${header({ blog: 'page' })}
 <main id="main-content" tabindex="-1">
 
   <!-- BLOG -->
