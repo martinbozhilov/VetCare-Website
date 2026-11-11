@@ -1998,7 +1998,7 @@ button { font-family: inherit; }
 .vc-legal-doc h5 { font-size: 16px; font-weight: 400; margin: 26px 0 6px; }
 .vc-legal-doc h6 { font-size: 15.5px; font-weight: 400; margin: 18px 0 10px; }
 
-.vc-legal-subhead { margin-top: 28px; color: var(--color-primary); }
+.vc-legal-prose .vc-legal-subhead { margin-top: 28px; color: var(--color-primary); }
 
 .vc-legal-item {
   display: grid;

@@ -14,38 +14,39 @@
 //
 // Run `npm run legal` (or `npm run build`, which calls it right after the blog).
 
-const fs = require('fs');
 const path = require('path');
 const { SRC, SITE } = require('./lib/pages');
 const {
-  esc, glueDash, SITE_CARD, head, header, FOOTER,
+  esc, glueDash, LONG_DASH, writeIfChanged, SITE_CARD, head, header, FOOTER,
 } = require('./lib/page-shell');
 const { loadLegal } = require('./lib/legal-texts');
+const { plain } = require('./lib/legal-markdown');
 const { checkLegalPage } = require('./lib/legal-parity');
 
-const LONG_DASH = /[—–]/;
 const OUT_FILE = path.join(SRC, 'legal.html');
 const TITLE = 'Правна информация - VetCare';
 const DESCRIPTION = 'Общите условия за ползване на VetCare, договорът за обработване на лични данни и списъкът на подизпълнителите, със същия текст като в приложението.';
 
 // ── Links in the app's own texts ──────────────────────────────────────────────────────────────
 // URLs and emails in the terms, the DPA and the sub-processor list become links; the words never
-// change (the parity check reads the link text). The clauses are never linkified.
+// change, and the parity check reads every link back: its href must be its own text (or mailto: and
+// the text). The clauses are never linkified. A URL ends at whitespace or a quote, typographic ones
+// included („https://vetcare.bg/privacy.html“ links to the address without the closing quote).
 function linkify(text) {
   const segs = [];
+  // The pattern ends in letters, digits or "-", so a trailing "." can never be part of a match.
   const emailRe = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+/g;
   const pushEmails = (t) => {
     let at = 0;
     for (const m of t.matchAll(emailRe)) {
-      let e = m[0];
-      while (e.endsWith('.')) e = e.slice(0, -1);
+      const e = m[0];
       if (m.index > at) segs.push({ text: t.slice(at, m.index) });
       segs.push({ text: e, href: `mailto:${e}` });
       at = m.index + e.length;
     }
     if (at < t.length) segs.push({ text: t.slice(at) });
   };
-  const urlRe = /https?:\/\/[^\s<>"]+/g;
+  const urlRe = /https?:\/\/[^\s<>"„“”«»]+/g;
   let at = 0;
   for (const m of text.matchAll(urlRe)) {
     let u = m[0];
@@ -81,7 +82,6 @@ function renderRuns(runs, { glue }) {
   }).join('');
 }
 
-const plainOf = (runs) => runs.map((r) => r.text).join('');
 const indent = (lines, pad) => lines.map((l) => (l ? pad + l : l));
 
 // ── Rendering: one block per line, nested content indented two spaces ─────────────────────────
@@ -101,7 +101,7 @@ function renderBlocks(blocks, { glue }) {
       for (const it of b.items) out.push(`  <li>${renderRuns(it.runs, { glue })}</li>`);
       out.push('</ul>');
     } else if (b.type === 'table') {
-      const labels = b.header.map((c) => esc(plainOf(c)));
+      const labels = b.header.map((c) => esc(plain(c)));
       out.push('<table class="vc-legal-table" role="table">');
       out.push('  <thead role="rowgroup">');
       out.push('    <tr role="row">');
@@ -198,14 +198,6 @@ ${dpaHtml}
 ${FOOTER}`;
 }
 
-// Files are only rewritten when their bytes change, so an unchanged build leaves mtimes alone and
-// `npm run watch` doesn't see its own output as an edit.
-function emit(file, content) {
-  const buf = Buffer.from(content);
-  if (fs.existsSync(file) && fs.readFileSync(file).equals(buf)) return;
-  fs.writeFileSync(file, buf);
-}
-
 async function main() {
   const legal = await loadLegal();
   for (const w of legal.warnings) console.warn(`⚠ legal: ${w}`);
@@ -228,15 +220,15 @@ async function main() {
 
   checkLegalPage(html, legal);
   // The app prints "9.11.2026" + U+202F + "г." (formatBgDate). Every date in the documents must be
-  // exactly that: as many as the date tokens filled during composition (checkLegalPage counts them
-  // in the composed source), and no date-shaped text left over in any other form (an ordinary or
-  // no-break space before "г.", no "г." at all).
-  const total = (html.match(/[0-9]{1,2}[.][0-9]{2}[.][0-9]{4}/g) || []).length;
+  // exactly that: as many as the date tokens filled during composition (legal.dateTokens), and no
+  // date-shaped text left over in any other form (an ordinary or no-break space before "г.", no
+  // "г." at all). A date-shaped text is <d>.<m>.<yyyy>, the month padded or not.
+  const total = (html.match(/[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{4}/g) || []).length;
   const good = html.split(legal.effectiveDateText).length - 1;
-  if (good !== legal.expectedDates || total !== legal.expectedDates) {
-    throw new Error(`legal.html: ${legal.expectedDates} date(s) must appear as "${legal.effectiveDateText}" (U+202F before "г."), found ${good} in that form and ${total} date-shaped in all`);
+  if (good !== legal.dateTokens || total !== legal.dateTokens) {
+    throw new Error(`legal.html: ${legal.dateTokens} date token(s) were filled, so ${legal.dateTokens} date(s) must appear as "${legal.effectiveDateText}" (U+202F before "г."), found ${good} in that form and ${total} date-shaped in all`);
   }
-  emit(OUT_FILE, html);
+  writeIfChanged(OUT_FILE, html);
   console.log(`✅ legal - terms v${legal.terms.version}, DPA v${legal.dpa.version}, sub-processors v${legal.subProcessors.version}, в сила от ${legal.effectiveDateText}`);
 }
 

@@ -23,10 +23,10 @@ const sharp = require('sharp');
 const MarkdownIt = require('markdown-it');
 const { SRC, SITE } = require('./lib/pages');
 const {
-  esc, glueDash, SITE_CARD, head, header, FOOTER,
+  esc, glueDash, LONG_DASH, writeIfChanged, SITE_CARD, head, header, FOOTER,
 } = require('./lib/page-shell');
 const {
-  CONTENT_DIR, IMAGE_PREFIX, LONG_DASH, loadPosts, imageSource, withVersion,
+  CONTENT_DIR, IMAGE_PREFIX, loadPosts, imageSource, withVersion,
 } = require('./lib/blog-posts');
 
 const OUT_DIR = path.join(SRC, 'blog');
@@ -55,8 +55,7 @@ const jsonLd = (obj) => JSON.stringify(obj, null, 2).replace(/</g, '\\u003c');
 const rel = (file) => path.relative(SRC, file).replace(/\\/g, '/');
 
 // ── Output bookkeeping ────────────────────────────────────────────────────────────────────────
-// Files are only rewritten when their bytes change, so an unchanged build leaves mtimes alone and
-// `npm run watch` doesn't see its own output as an edit.
+// Every file goes through writeIfChanged (lib/page-shell.js); `written` is what removeStale keeps.
 const written = new Set();
 function emit(file, content) {
   // House style: no em or en dashes in anything a visitor reads, the site uses " - " instead.
@@ -65,10 +64,7 @@ function emit(file, content) {
     throw new Error(`${rel(file)}: the page text contains a long dash (— or –); use " - " instead`);
   }
   written.add(path.resolve(file));
-  const buf = Buffer.isBuffer(content) ? content : Buffer.from(content);
-  if (fs.existsSync(file) && fs.readFileSync(file).equals(buf)) return;
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, buf);
+  writeIfChanged(file, content);
 }
 
 function removeStale(dir) {
@@ -168,12 +164,14 @@ function picture(image, alt, { lazy = false, priority = false, cls = '', sizes =
 // ── Markdown ──────────────────────────────────────────────────────────────────────────────────
 // markdown-it with GFM's output: tables (alignment as an `align` attribute), ~~strikethrough~~ as
 // <del>, autolinks and raw HTML. Task lists ("- [ ] x") are not supported and stay plain text.
+// Strikethrough is "~~x~~" only: a single "~" stays a literal tilde (marked also took "~x~"). The
+// marketing drafts write "~70" and "~950; ~400" for "about", and a single-tilde rule would strike
+// the text between two such numbers through.
 function makeMarkdown() {
   const md = new MarkdownIt({ html: true, linkify: true });
   // Bare "http(s)://", "www." and e-mail addresses become links, as in GFM, but a bare domain
   // ("vetcare.bg") must not: linkify-it's fuzzy matching is what finds "www." and a domain alike, so
-  // it is switched on and its schemaless matches are filtered down to the "www." ones.
-  md.linkify.set({ fuzzyLink: true });
+  // it is on by default (fuzzyLink) and its schemaless matches are filtered down to the "www." ones.
   const match = md.linkify.match.bind(md.linkify);
   md.linkify.match = (text) => (match(text) || []).filter((m) => m.schema !== '' || /^www\./i.test(m.raw));
 
@@ -193,8 +191,13 @@ function makeMarkdown() {
   };
   rules.th_open = align;
   rules.td_open = align;
-  // GFM output escapes the apostrophe too.
+  // The apostrophe is written &#39; in text and code, as GFM renderers write it (attributes keep
+  // markdown-it's own escaping).
   rules.text = (tokens, i) => esc(tokens[i].content).replace(/'/g, '&#39;');
+  for (const name of ['code_inline', 'code_block', 'fence']) {
+    const base = rules[name];
+    rules[name] = (...args) => base(...args).replace(/'/g, '&#39;');
+  }
   // The image and figure rules read what renderMarkdown prepared for this article from `env`.
   rules.image = (tokens, i, options, env) => {
     const t = tokens[i];

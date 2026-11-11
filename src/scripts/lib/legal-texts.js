@@ -10,13 +10,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { SRC } = require('./pages');
+const { LONG_DASH } = require('./page-shell');
 
 const LEGAL_SOURCES = 'content/legal';
 const LEGAL_DIR = path.join(SRC, 'content', 'legal');
 const MANIFEST = 'legal-documents.json';
-
-// Same rule as blog-posts.js (not imported: that module pulls in sharp).
-const LONG_DASH = /[—–]/;
 
 // The app's LegalTextHash.OfText: UTF-8, leading BOMs dropped, every line ending turned into LF
 // (exactly the ones .NET's ReplaceLineEndings recognises), SHA-256, lowercase hex.
@@ -116,12 +114,25 @@ function readText(fileName, want) {
 }
 
 // ── Composition (mirrors LegalDocumentLibrary.Compose) ────────────────────────────────────────
-const ALWAYS_DROP_TOKENS = /\{\{clinic\.(name|address)\}\}/;
+// The clinic's own data: the page has no clinic, so a line carrying one of these tokens is left out,
+// but only inside Annex I, where the app's text puts its clinic lines. Anywhere else a clinic token
+// is an error: the line would otherwise vanish from /legal without a trace.
+const CLINIC_TOKEN = /\{\{clinic\.(name|address)\}\}/;
+// Annex I runs from a heading with this text (not "Приложение II" or "IV") up to the next heading
+// of the same or a higher level. lib/legal-parity.js keeps its own copy of this rule on the raw lines.
+const ANNEX_I = /^Приложение I( |$)/;
 
-function fill(runs, values, where) {
+const DATE_TOKENS = new Set(['effectiveDate', 'lastChanged']);
+
+// `dates.count` is raised for every date token filled: build-legal.js checks that the page carries
+// exactly that many dates.
+function fill(runs, values, where, dates) {
   return runs.map((r) => {
     const text = r.text.replace(/\{\{([A-Za-z0-9.]+)\}\}/g, (all, name) => {
-      if (Object.prototype.hasOwnProperty.call(values, name)) return values[name];
+      if (Object.prototype.hasOwnProperty.call(values, name)) {
+        if (DATE_TOKENS.has(name)) dates.count += 1;
+        return values[name];
+      }
       throw new Error(`${where}: the token {{${name}}} has no value on this page (no clinic, no acceptance, and no section is on)`);
     });
     if (/\{\{|\}\}/.test(text)) throw new Error(`${where}: "{{" or "}}" left after filling the tokens`);
@@ -129,27 +140,40 @@ function fill(runs, values, where) {
   });
 }
 
-// `resolve(name)` returns the blocks an include expands to.
-function compose(nodes, { values, file, resolve }) {
+// `resolve(name)` returns the blocks an include expands to. A section ({{#contact}}, {{#acceptance}})
+// is left out wherever it is: it is shown only when it is on, and none is on here (the app's own
+// rule). A clinic line is left out only inside Annex I, which the walk tracks through the top-level
+// headings.
+function compose(nodes, { values, file, resolve, dates }) {
   const out = [];
+  let annexLevel = null; // the level of the heading that opened Annex I, while inside it
+  const clinicLine = (runs, at) => {
+    if (!runs.some((r) => CLINIC_TOKEN.test(r.text))) return false;
+    if (annexLevel === null) {
+      throw new Error(`${at}: a clinic token outside Annex I (the page has no clinic, and only Annex I's clinic lines are left out)`);
+    }
+    return true;
+  };
   for (const node of nodes) {
     const where = `${LEGAL_SOURCES}/${file}:${node.line || ''}`;
     if (node.type === 'heading') {
-      if (node.runs.some((r) => ALWAYS_DROP_TOKENS.test(r.text))) throw new Error(`${where}: a clinic token in a heading`);
-      out.push({ type: 'heading', level: node.level, runs: fill(node.runs, values, where), line: node.line });
+      if (node.runs.some((r) => CLINIC_TOKEN.test(r.text))) throw new Error(`${where}: a clinic token in a heading`);
+      if (annexLevel !== null && node.level <= annexLevel) annexLevel = null;
+      if (ANNEX_I.test(node.runs.map((r) => r.text).join(''))) annexLevel = node.level;
+      out.push({ type: 'heading', level: node.level, runs: fill(node.runs, values, where, dates), line: node.line });
     } else if (node.type === 'paragraph') {
       if (node.section !== null) continue; // no section is on: the page has no contact, no acceptance
-      if (node.runs.some((r) => ALWAYS_DROP_TOKENS.test(r.text))) continue; // no clinic on this page
-      out.push({ type: 'paragraph', runs: fill(node.runs, values, where), line: node.line });
+      if (clinicLine(node.runs, where)) continue;
+      out.push({ type: 'paragraph', runs: fill(node.runs, values, where, dates), line: node.line });
     } else if (node.type === 'bullets') {
       const items = node.items
-        .filter((it) => it.section === null && !it.runs.some((r) => ALWAYS_DROP_TOKENS.test(r.text)))
-        .map((it) => ({ runs: fill(it.runs, values, `${LEGAL_SOURCES}/${file}:${it.line}`), line: it.line }));
+        .filter((it) => it.section === null && !clinicLine(it.runs, `${LEGAL_SOURCES}/${file}:${it.line}`))
+        .map((it) => ({ runs: fill(it.runs, values, `${LEGAL_SOURCES}/${file}:${it.line}`, dates), line: it.line }));
       if (items.length) out.push({ type: 'bullets', items }); // a list whose items all drop disappears
     } else if (node.type === 'table') {
       const cell = (runs) => {
-        if (runs.some((r) => ALWAYS_DROP_TOKENS.test(r.text))) throw new Error(`${where}: a clinic token in a table cell`);
-        return fill(runs, values, where);
+        if (runs.some((r) => CLINIC_TOKEN.test(r.text))) throw new Error(`${where}: a clinic token in a table cell`);
+        return fill(runs, values, where, dates);
       };
       out.push({ type: 'table', header: node.header.map(cell), rows: node.rows.map((row) => row.map(cell)), line: node.line });
     } else if (node.type === 'include') {
@@ -192,6 +216,7 @@ async function loadLegal() {
     }
   }
 
+  const dates = { count: 0 };
   const parse = (text, file, kind) => parseLegalMarkdown(text, file, { kind });
   const termsNodes = parse(termsText, rel.terms.file, 'document');
   const dpaNodes = parse(dpaText, rel.dpa.file, 'document');
@@ -206,18 +231,21 @@ async function loadLegal() {
     blocks: compose(termsNodes, {
       values: { version: String(rel.terms.version), effectiveDate: effectiveDateText },
       file: rel.terms.file,
+      dates,
       resolve: (n) => { throw new Error(`${LEGAL_SOURCES}/${rel.terms.file}:${n.line}: the terms take no includes`); },
     }),
   };
   const subBlocks = compose(spNodes, {
     values: spValues,
     file: rel.subProcessors.file,
+    dates,
     resolve: (n) => { throw new Error(`${LEGAL_SOURCES}/${rel.subProcessors.file}:${n.line}: the sub-processor list takes no includes`); },
   });
   const dpa = {
     blocks: compose(dpaNodes, {
       values: dpaValues,
       file: rel.dpa.file,
+      dates,
       resolve: (n) => (n.name === 'clauses'
         ? { type: 'group', name: 'clauses', glue: false, blocks: clausesNodes }
         : { type: 'group', name: 'sub-processors', glue: true, blocks: subBlocks }),
@@ -234,15 +262,14 @@ async function loadLegal() {
 
   terms.text = termsText;
   dpa.text = dpaText;
-  dpa.clausesText = clausesText;
   dpa.values = dpaValues;
   return {
-    effectiveDate: rel.effectiveDate,
     effectiveDateText,
     terms: { ...terms, version: rel.terms.version, values: { version: String(rel.terms.version), effectiveDate: effectiveDateText } },
     dpa: { ...dpa, version: rel.dpa.version },
     subProcessors: { version: rel.subProcessors.version, text: spText, values: spValues },
     clausesText,
+    dateTokens: dates.count,
     warnings,
   };
 }

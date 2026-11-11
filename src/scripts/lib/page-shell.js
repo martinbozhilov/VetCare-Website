@@ -3,7 +3,12 @@
 // with root-absolute URLs (the pages are served without an extension and the blog lives one
 // directory down, so relative URLs would break). A nav or footer change has to be made here AND in
 // index.html, privacy.html and 404.html - see CLAUDE.md.
+//
+// It also holds the two helpers both builds share: the house-style dash rules (LONG_DASH, glueDash)
+// and writeIfChanged.
 
+const fs = require('fs');
+const path = require('path');
 const { SITE } = require('./pages');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -13,6 +18,18 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // spelled out rather than typed, because a literal one is invisible and editors normalise it away.
 const NBSP = String.fromCharCode(0xa0);
 const glueDash = (s) => s.replace(/ - /g, `${NBSP}- `);
+// The rule behind it: no em dash or en dash in anything a visitor reads (blog articles, the blog's
+// and the legal page's own templates, the warning on the vendored legal texts).
+const LONG_DASH = /[—–]/;
+
+// Files are only rewritten when their bytes change, so an unchanged build leaves mtimes alone and
+// `npm run watch` doesn't see its own output as an edit. `content` is a string or a Buffer.
+function writeIfChanged(file, content) {
+  const buf = Buffer.isBuffer(content) ? content : Buffer.from(content);
+  if (fs.existsSync(file) && fs.readFileSync(file).equals(buf)) return;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, buf);
+}
 
 // The list page has no image of its own, so it shares the site's link-preview card.
 const SITE_CARD = { url: `${SITE}/assets/images/vetcare-og.jpg`, alt: 'Екранът с пациентите във VetCare' };
@@ -202,4 +219,4 @@ const FOOTER = `
 </html>
 `;
 
-module.exports = { esc, NBSP, glueDash, SITE_CARD, head, header, NAV, FOOTER };
+module.exports = { esc, NBSP, glueDash, LONG_DASH, writeIfChanged, SITE_CARD, head, header, NAV, FOOTER };

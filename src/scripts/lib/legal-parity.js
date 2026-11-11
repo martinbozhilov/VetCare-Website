@@ -13,26 +13,46 @@
 // down to the typo). Second, the whole visible text of each region (terms, DPA, clauses), in
 // reading order, must equal the composed source text with the emphasis markers stripped, so text
 // outside the block elements (an extra <div>, a bare text node, a paragraph repeated inside another
-// element, words after a label) fails too. Not covered: which tag a block is (h3 vs h4, p vs li) and
-// which cell is in which column.
+// element, words after a label) fails too. Third, every link in those regions must point where its
+// text says: an href is its own text, or "mailto:" plus it (a link's words are read as plain text
+// above, so the checks on them would not notice a wrong target). Not covered: which tag a block is
+// (h3 vs h4, p vs li) and which cell is in which column.
 
-// Source lines that never reach the page: the clinic's own data (no clinic on /legal) and the
-// sections that only exist once a clinic has accepted.
-const DROPPED_LINE = /\{\{(clinic\.(name|address)|#contact|#acceptance)\}\}/;
+// Source lines that never reach the page. Two rules, deliberately different:
+// - SECTION_LINE: the sections that only exist once a clinic has accepted or has a contact. They are
+//   left out wherever they are (the app shows a section only when it is on, and none is on here).
+// - CLINIC_LINE: the clinic's own data (no clinic on /legal). Left out only inside Annex I, the
+//   part of a text from a heading matching ANNEX_I up to the next heading of the same or a higher
+//   level. A clinic token anywhere else is an error, so a clause can't vanish from the page unseen.
+// The Annex I scope is tracked on the raw heading lines (the number of "#" is the level), not taken
+// from the parser.
+const SECTION_LINE = /\{\{(#contact|#acceptance)\}\}/;
+const CLINIC_LINE = /\{\{clinic\.(name|address)\}\}/;
+const ANNEX_I = /^Приложение I( |$)/;
 
 // What the page must say for a source text, as a list of blocks: syntax stripped (emphasis markers
 // kept), tokens filled, includes expanded. `includes` maps an include name to the block list of
 // what it expands to.
 function expectedBlocks(text, { values = {}, includes = {} } = {}) {
   const out = [];
-  for (const raw of text.split('\n')) {
+  let annexLevel = null; // the level of the heading that opened Annex I, while inside it
+  for (const [at, raw] of text.split('\n').entries()) {
     const inc = raw.replace(/^[ \t]+|[ \t]+$/g, '').match(/^\{\{> ([a-z-]+)\}\}$/);
     if (inc) {
       if (!(inc[1] in includes)) throw new Error(`parity: no expansion given for the include "${inc[1]}"`);
       out.push(...includes[inc[1]]);
       continue;
     }
-    if (DROPPED_LINE.test(raw)) continue;
+    if (SECTION_LINE.test(raw)) continue;
+    const heading = raw.match(/^(#{1,6})[ \t]+(.*)$/);
+    if (heading) {
+      if (annexLevel !== null && heading[1].length <= annexLevel) annexLevel = null;
+      if (ANNEX_I.test(heading[2].trim())) annexLevel = heading[1].length;
+    }
+    if (CLINIC_LINE.test(raw)) {
+      if (annexLevel === null) throw new Error(`parity: a clinic token outside Annex I on source line ${at + 1}`);
+      continue;
+    }
     if (/^\|[ \t:|-]+\|$/.test(raw)) continue; // a table delimiter row
     const s = raw
       .replace(/^[ \t]+/, '') // spaces and tabs only, never U+00A0
@@ -136,8 +156,6 @@ function checkLegalPage(html, legal) {
   const dpaExpected = expectedBlocks(dpa.text, { values: dpa.values, includes: { clauses: clausesExpected, 'sub-processors': spExpected } });
   sameBlocksOrThrow('dpa', renderedBlocks(region(html, 'dpa')), dpaExpected, loose);
   sameTextOrThrow('dpa', region(html, 'dpa'), dpaExpected, loose);
-  // date tokens filled in the composed source (build-legal.js checks the page carries exactly this many)
-  legal.expectedDates = [...termsExpected, ...dpaExpected].join(String.fromCharCode(10)).split(terms.values.effectiveDate).length - 1;
 
   // 3. The Commission's clauses, every no-break space and dash included
   sameBlocksOrThrow('clauses', renderedBlocks(region(html, 'clauses')), clausesExpected, strict);
@@ -174,6 +192,18 @@ function checkLegalPage(html, legal) {
   for (const m of regions.dpa.matchAll(/<li>([\s\S]*?)<\/li>/g)) {
     if (visibleText(m[1]).trim().endsWith(':')) {
       throw new Error(`leak (dpa): a list item ends with ":" (an empty field): ${JSON.stringify(visibleText(m[1]).trim().slice(-60))}`);
+    }
+  }
+
+  // 7. Every link points where its text says (the clauses are never linkified, so there is nothing
+  // to find in them, and checking them is harmless)
+  for (const name of ['terms', 'dpa', 'clauses']) {
+    for (const m of region(html, name).matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
+      const href = decode((m[1].match(/\bhref="([^"]*)"/) || [null, ''])[1]);
+      const text = decode(m[2].replace(/<[^>]*>/g, ''));
+      if (href !== text && href !== `mailto:${text}`) {
+        throw new Error(`parity (links): href "${href}" does not match its text "${text}"`);
+      }
     }
   }
 }

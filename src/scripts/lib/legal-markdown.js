@@ -19,10 +19,14 @@
 // and entity refusals also read the raw source of each block, since markdown-it would turn an
 // escape or an entity into plain text.
 //
-// Two refusals of the earlier hand-written parser are gone because markdown-it implements the
-// CommonMark rule exactly as Markdig does, so it renders what the app renders: a heading's closing
-// "#" sequence, and a line that merely looks like an ordered list item inside a paragraph (only
-// "1." can interrupt a paragraph).
+// One refusal of the earlier hand-written parser is gone because markdown-it implements the
+// CommonMark rule exactly as Markdig does, so it renders what the app renders: a line that merely
+// looks like an ordered list item inside a paragraph (only "1." can interrupt a paragraph). Ordered
+// lists themselves are still refused. The other one is back: a heading's closing "#" sequence is
+// refused, because the parity check (lib/legal-parity.js) strips only the opening "#" and the texts
+// never use a closing sequence. For the same reason a few forms that both libraries render fine are
+// refused, as the parity check could not read them back: emphasis written with "_" (the texts use
+// "*"), a table row that doesn't start and end with "|", and a bullet marker followed by a tab.
 //
 // "Strict" means: anything the app might accept but this parser doesn't implement is an error with
 // file and line, never a guess. A loud failure can't publish a text that differs from the app's.
@@ -156,9 +160,11 @@ function parseLegalMarkdown(text, file, { kind }) {
     };
     for (const c of inline.children) {
       if (c.type === 'text') runs.push({ text: c.content, bold: strong > 0, italic: em > 0 });
-      else if (c.type === 'em_open') em += 1;
-      else if (c.type === 'em_close') em -= 1;
-      else if (c.type === 'strong_open') strong += 1;
+      else if (c.type === 'em_open' || c.type === 'strong_open') {
+        if (c.markup.includes('_')) throw err(file, line + breaks, 'emphasis written with "_" (the texts use "*")');
+        if (c.type === 'em_open') em += 1;
+        else strong += 1;
+      } else if (c.type === 'em_close') em -= 1;
       else if (c.type === 'strong_close') strong -= 1;
       else if (c.type === 'softbreak' || c.type === 'hardbreak') {
         if (em > 0 || strong > 0) throw err(file, line + breaks, 'emphasis across two lines (the app refuses it)');
@@ -187,11 +193,14 @@ function parseLegalMarkdown(text, file, { kind }) {
   function table(i, ctx) {
     const t = tokens[i];
     const [start, end] = t.map;
-    const raw = (ln) => lines[ln].replace(/^ +/, '');
-    if (!raw(start).startsWith('|')) throw err(file, start + 1, 'a table row that does not start with "|"');
+    // Every row, the delimiter row included, must be written with its outer pipes.
+    for (let ln = start; ln < end; ln += 1) {
+      const row = trimST(lines[ln]);
+      if (!row.startsWith('|')) throw err(file, ln + 1, 'a table row that does not start with "|"');
+      if (!row.endsWith('|')) throw err(file, ln + 1, 'a table row that does not end with "|"');
+    }
     const width = rawCells(lines[start]).length;
     for (let ln = start + 2; ln < end; ln += 1) {
-      if (!raw(ln).startsWith('|')) throw err(file, ln + 1, 'a table row that does not start with "|"');
       const n = rawCells(lines[ln]).length;
       if (n !== width) throw err(file, ln + 1, `a table row with ${n} cells under a header of ${width}`);
     }
@@ -278,6 +287,7 @@ function parseLegalMarkdown(text, file, { kind }) {
       const open = tokens[j];
       const end = closeOf(j);
       const itemLine = open.map[0] + 1;
+      if (/^[ \t]*-\t/.test(lines[open.map[0]])) throw err(file, itemLine, 'a bullet marker followed by a tab');
       const inner = tokens.slice(j + 1, end);
       if (inner.length !== 3 || inner[0].type !== 'paragraph_open') throw err(file, itemLine, 'a bullet item is one line of text');
       checkEdges(inner[0].map[0], inner[0].map[1]);
@@ -342,6 +352,10 @@ function parseLegalMarkdown(text, file, { kind }) {
           if (t.markup === '######') throw err(file, line, 'a level 6 heading');
           if (t.markup === '=' || t.markup === '-') throw err(file, t.map[1], 'a setext heading');
           checkEdges(t.map[0], t.map[1]);
+          // "### x ###" and "### x #": the closing sequence needs a space (or the start) before it.
+          if (/(^|[ \t])#+[ \t]*$/.test(lines[t.map[0]].replace(/^ {0,3}#{1,6}/, ''))) {
+            throw err(file, line, 'a heading\'s closing "#" sequence');
+          }
           const runs = runsOf(tokens[i + 1], line);
           checkTokens(runs, file, line, { kind, inItem: ctx.inItem });
           nodes.push({ type: 'heading', level: t.markup.length, runs, line });
