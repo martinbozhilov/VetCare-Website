@@ -20,6 +20,8 @@
     "@tabler/icons-webfont": "^3.14.0",
     "esbuild": "^0.28.1",
     "fontverter": "^2.0.0",
+    "markdown-it": "^15.0.3",
+    "markdown-it-deflist": "^4.0.0",
     "marked": "^18.1.3",
     "opentype.js": "^2.0.0",
     "sharp": "^0.35.3",

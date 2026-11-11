@@ -3,8 +3,8 @@
 // composes the documents the way the app's LegalDocumentLibrary does.
 //
 // The texts are the app's, copied byte for byte and never edited here (CLAUDE.md, "Legal page").
-// This module must not import `marked` at load time: scripts/gen-sitemap.js requires it only for
-// the LEGAL_SOURCES constant.
+// This module must not load markdown-it at load time (the parser is required lazily, inside
+// loadLegal): scripts/gen-sitemap.js requires it only for the LEGAL_SOURCES constant.
 
 const fs = require('fs');
 const path = require('path');
@@ -172,9 +172,7 @@ function firstHeading(blocks, id, what) {
 
 async function loadLegal() {
   const rel = readManifest();
-  const marked = await import('marked');
-  const { makeInline, parseLegalMarkdown } = require('./legal-markdown');
-  const inline = makeInline({ Lexer: marked.Lexer, getDefaults: marked.getDefaults });
+  const { parseLegalMarkdown } = require('./legal-markdown');
 
   const termsText = readText(rel.terms.file, rel.terms.sha256);
   const dpaText = readText(rel.dpa.file, rel.dpa.sha256);
@@ -194,7 +192,7 @@ async function loadLegal() {
     }
   }
 
-  const parse = (text, file, kind) => parseLegalMarkdown(text, file, { inline, kind });
+  const parse = (text, file, kind) => parseLegalMarkdown(text, file, { kind });
   const termsNodes = parse(termsText, rel.terms.file, 'document');
   const dpaNodes = parse(dpaText, rel.dpa.file, 'document');
   const clausesNodes = parse(clausesText, rel.dpa.clauses, 'clauses');
