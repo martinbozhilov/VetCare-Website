@@ -20,6 +20,7 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const MarkdownIt = require('markdown-it');
 const { SRC, SITE } = require('./lib/pages');
 const {
   esc, glueDash, SITE_CARD, head, header, FOOTER,
@@ -165,56 +166,104 @@ function picture(image, alt, { lazy = false, priority = false, cls = '', sizes =
 }
 
 // ── Markdown ──────────────────────────────────────────────────────────────────────────────────
-// marked is ESM-only, hence the dynamic import from this CommonJS script.
-let markedModule = null;
-async function renderMarkdown(post) {
-  if (!markedModule) markedModule = await import('marked');
-  const md = new markedModule.Marked({ gfm: true });
+// markdown-it, configured to give what the GFM renderer used before gave, so the switch changes no
+// article.
+// The differences that are left, for whoever writes the next article: a task list ("- [ ] x") shows
+// the text, not a checkbox; a named entity ("&copy;") comes out as the character, not as the
+// entity; a link or image URL is percent-encoded; and the whitespace between block elements differs
+// (the same HTML, not the same bytes) in tables, loose and nested lists and after an HTML comment.
+function makeMarkdown() {
+  const md = new MarkdownIt({ html: true, linkify: true });
+  // Bare "http(s)://", "www." and e-mail addresses become links, as in GFM, but a bare domain
+  // ("vetcare.bg") must not: linkify-it's fuzzy matching is what finds "www." and a domain alike, so
+  // it is switched on and its schemaless matches are filtered down to the "www." ones.
+  md.linkify.set({ fuzzyLink: true });
+  const match = md.linkify.match.bind(md.linkify);
+  md.linkify.match = (text) => (match(text) || []).filter((m) => m.schema !== '' || /^www./i.test(m.raw));
 
-  const tokens = md.lexer(post.body);
-  const images = [];
-  md.walkTokens(tokens, (t) => {
-    // The page already has its one H1 — the title from the frontmatter.
-    if (t.type === 'heading' && t.depth === 1) {
-      throw new Error(`${post.sourceFile}: "# ${t.text}" is an H1; the title is the page's only H1 — use ## for sections`);
+  const rules = md.renderer.rules;
+  rules.s_open = () => '<del>';
+  rules.s_close = () => '</del>';
+  rules.hardbreak = () => '<br>';
+  // GFM's table alignment is an attribute, markdown-it's an inline style (and this site has none).
+  const align = (tokens, i, options, env, self) => {
+    const t = tokens[i];
+    const style = t.attrGet('style');
+    if (style) {
+      t.attrs = t.attrs.filter((a) => a[0] !== 'style');
+      t.attrSet('align', style.replace(/^text-align:/, ''));
     }
-    if (t.type === 'image') images.push(t.href);
-    // Plain text only: code spans and URLs are other token types, so they keep their spaces.
-    if (t.type === 'text') t.text = glueDash(t.text);
-  });
-  const ready = new Map();
+    return self.renderToken(tokens, i, options);
+  };
+  rules.th_open = align;
+  rules.td_open = align;
+  // GFM output escapes the apostrophe too.
+  rules.text = (tokens, i) => esc(tokens[i].content).replace(/'/g, '&#39;');
+  // The image and figure rules read what renderMarkdown prepared for this article from `env`.
+  rules.image = (tokens, i, options, env) => {
+    const t = tokens[i];
+    return picture(env.ready.get(t.attrGet('src')), t.content, { lazy: true });
+  };
+  // An image alone in its paragraph is a captioned figure. The caption is the image's title if it
+  // has one (`![alt](src "caption")`), else its alt text, and when it repeats the alt it is hidden
+  // from screen readers, which would otherwise read the same sentence twice.
+  rules.vc_figure = (tokens, i, options, env) => {
+    const t = tokens[i].meta;
+    const alt = t.content;
+    const caption = t.attrGet('title') || alt;
+    const pic = picture(env.ready.get(t.attrGet('src')), alt, { lazy: true }, '  ');
+    if (!caption) return `<figure>
+${pic}
+</figure>
+`;
+    const hidden = caption === alt ? ' aria-hidden="true"' : '';
+    return `<figure>
+${pic}
+  <figcaption${hidden}>${esc(caption)}</figcaption>
+</figure>
+`;
+  };
+  return md;
+}
+const markdown = makeMarkdown();
+
+async function renderMarkdown(post) {
+  const env = { ready: new Map() };
+  const tokens = markdown.parse(post.body, env);
+  const images = [];
+  for (let i = 0; i < tokens.length; i += 1) {
+    const t = tokens[i];
+    // The page already has its one H1 — the title from the frontmatter.
+    if (t.type === 'heading_open' && t.tag === 'h1') {
+      throw new Error(`${post.sourceFile}: "# ${tokens[i + 1].content}" is an H1; the title is the page's only H1 — use ## for sections`);
+    }
+    if (t.type !== 'inline') continue;
+    for (const c of t.children) {
+      if (c.type === 'image') images.push(c.attrGet('src'));
+      // Plain text only: code spans, URLs and an image's alt are other tokens, so they keep their spaces.
+      if (c.type === 'text') c.content = glueDash(c.content);
+    }
+  }
   for (const href of images) {
     try {
-      ready.set(href, await prepareImage(href, { maxWidth: INLINE_MAX_WIDTH }));
+      env.ready.set(href, await prepareImage(href, { maxWidth: INLINE_MAX_WIDTH }));
     } catch (err) {
       throw new Error(`${post.sourceFile}: ${err.message}`);
     }
   }
 
-  // An image alone in its paragraph becomes a captioned figure. The caption is the image's title
-  // if it has one (`![alt](src "caption")`), else its alt text — and when it repeats the alt it is
-  // hidden from screen readers, which would otherwise read the same sentence twice.
-  const figure = (t) => {
-    const caption = t.title || t.text;
-    const pic = picture(ready.get(t.href), t.text, { lazy: true }, '  ');
-    if (!caption) return `<figure>\n${pic}\n</figure>\n`;
-    const hidden = caption === t.text ? ' aria-hidden="true"' : '';
-    return `<figure>\n${pic}\n  <figcaption${hidden}>${esc(caption)}</figcaption>\n</figure>\n`;
-  };
-
-  md.use({
-    renderer: {
-      paragraph(token) {
-        const parts = token.tokens.filter((t) => !(t.type === 'text' && !t.text.trim()));
-        if (parts.length === 1 && parts[0].type === 'image') return figure(parts[0]);
-        return false; // marked's default
-      },
-      image(token) {
-        return picture(ready.get(token.href), token.text, { lazy: true });
-      },
-    },
-  });
-  return md.parser(tokens);
+  // A paragraph that holds one image (whitespace-only text ignored) becomes a figure token. A
+  // paragraph inside a tight list is hidden and keeps its image inline, as before.
+  for (let i = 0; i + 2 < tokens.length; i += 1) {
+    if (tokens[i].type !== 'paragraph_open' || tokens[i].hidden) continue;
+    const parts = tokens[i + 1].children.filter((c) => !(c.type === 'text' && !c.content.trim()));
+    if (parts.length !== 1 || parts[0].type !== 'image') continue;
+    const figure = new tokens[i].constructor('vc_figure', '', 0);
+    figure.block = true;
+    figure.meta = parts[0];
+    tokens.splice(i, 3, figure);
+  }
+  return markdown.renderer.render(tokens, markdown.options, env);
 }
 
 const timeTag = (iso) => `<time datetime="${iso}">${formatDate(iso)}</time>`;
