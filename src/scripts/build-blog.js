@@ -286,16 +286,14 @@ async function articlePage(post) {
   const meta = post.updated
     ? `${timeTag(post.date)} · Обновена на ${timeTag(post.updated)}`
     : timeTag(post.date);
-  // Tags: plain labels under the date, not links (there are no tag pages yet), and nowhere else on
-  // the site. One line of HTML, so tagging an article is a one-line diff in its page, and no element
-  // at all without tags. The "·" ends each tag but the last, inside its <li>, so a row that wraps on
-  // a phone ends with a dot instead of starting with one; it is aria-hidden like the footer's
-  // separators. role="list" because Safari drops the list role (and with it the aria-label) from a
-  // list styled list-style: none.
-  const sep = '<span class="vc-article-tags-sep" aria-hidden="true">·</span>';
+  // Tags: chips under the date, not links (there are no tag pages yet), and nowhere else on the site.
+  // One line of HTML, so tagging an article is a one-line diff in its page, and no element at all
+  // without tags. Each chip is its own box, so no separator is needed between them. role="list"
+  // because Safari drops the list role (and with it the aria-label) from a list styled
+  // list-style: none.
   const tagList = post.tags.length
     ? `\n        <ul class="vc-article-tags" role="list" aria-label="Теми">${post.tags
-      .map((t, i) => `<li class="vc-article-tag">${esc(t)}${i < post.tags.length - 1 ? sep : ''}</li>`)
+      .map((t) => `<li class="vc-article-tag">${esc(t)}</li>`)
       .join('')}</ul>`
     : '';
 
