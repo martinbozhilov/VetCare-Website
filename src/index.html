@@ -79,9 +79,10 @@
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
-    {"@type":"SoftwareApplication","name":"VetCare","applicationCategory":"BusinessApplication","operatingSystem":"Web, iOS, Android","description":"Софтуер за ветеринарни клиники - картони, ваксинации, склад, дневници и напомняния на едно място. Основните функции са безплатни.","featureList":["Картони и история на прегледите","Ваксинации и реваксинации","Стопани и контакти","Хоспитализации","Продажби","Склад с партиди и срокове на годност","Дневници: ВЛП, наркотични вещества, хигиена, температурен режим","Напомняния и известия","Екип и права"],"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"inLanguage":"bg"},
-    {"@type":"Organization","name":"VetCare","description":"Софтуер за ветеринарни клиники.","email":"hello@vetcare.bg","url":"https://vetcare.bg","logo":"https://vetcare.bg/assets/images/vetcare-logo-512.png","sameAs":["https://www.facebook.com/vetcare.bg","https://www.linkedin.com/company/vetcare-bg"]},
-    {"@type":"FAQPage","mainEntity":[
+    {"@type":"SoftwareApplication","@id":"https://vetcare.bg/#software","name":"VetCare","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Софтуер за ветеринарни клиники - картони, ваксинации, склад, дневници и напомняния на едно място. Основните функции са безплатни.","featureList":["Картони и история на прегледите","Ваксинации и реваксинации","Стопани и контакти","Хоспитализации","Продажби","Склад с партиди и срокове на годност","Дневници: ВЛП, наркотични вещества, хигиена, температурен режим","Напомняния и известия","Екип и права"],"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"inLanguage":"bg","publisher":{"@id":"https://vetcare.bg/#organization"}},
+    {"@type":"Organization","@id":"https://vetcare.bg/#organization","name":"VetCare","legalName":"„ВЕТ КЕАР“ ЕООД","description":"Софтуер за ветеринарни клиники.","email":"hello@vetcare.bg","url":"https://vetcare.bg","logo":"https://vetcare.bg/assets/images/vetcare-logo-512.png","sameAs":["https://www.facebook.com/vetcare.bg","https://www.linkedin.com/company/vetcare-bg"]},
+    {"@type":"WebSite","@id":"https://vetcare.bg/#website","name":"VetCare","url":"https://vetcare.bg/","publisher":{"@id":"https://vetcare.bg/#organization"}},
+    {"@type":"FAQPage","@id":"https://vetcare.bg/#faq","isPartOf":{"@id":"https://vetcare.bg/#website"},"about":{"@id":"https://vetcare.bg/#software"},"mainEntity":[
       {"@type":"Question","name":"Наистина ли е безплатно?","acceptedAnswer":{"@type":"Answer","text":"Да. Всички основни функции за работата на клиниката са безплатни, без срок и без кредитна карта. В бъдеще ще предложим платен план само с разширени функции."}},
       {"@type":"Question","name":"Трябва ли да инсталирам нещо?","acceptedAnswer":{"@type":"Answer","text":"Не. VetCare работи в браузъра (Chrome, Edge, Safari или Firefox) на компютър, лаптоп, таблет или телефон. Ако на устройството ви се отварят нормално сайтове, ще върви и VetCare. Нужна е само интернет връзка."}},
       {"@type":"Question","name":"Какво става с данните ми от стария софтуер?","acceptedAnswer":{"@type":"Answer","text":"Мигрираме ги безплатно. Свързвате се с нас и ние се грижим да прехвърлим картоните, клиентите и историята."}},
@@ -488,12 +489,17 @@
           <!-- novalidate: same reason as the demo form below — native bubbles follow the browser's UI
              language, not lang="bg". submitWait() produces the Bulgarian message in .vc-form-err. -->
           <form @submit.prevent="submitWait($event)" @focusin="warmCaptcha()" novalidate class="vc-waitlist-form">
-            <div class="vc-form-row">
-              <input type="email" required placeholder="вашият имейл" x-model="waitEmail" @input="waitErr = ''"
-                x-ref="waitEmailInput" :aria-invalid="waitErr ? 'true' : 'false'" aria-describedby="vc-wait-err"
-                aria-label="вашият имейл - ранна покана" class="vc-input">
-              <button type="submit" :disabled="waitLoading" class="vc-form-btn vc-waitlist-btn"><span
-                  x-text="waitLoading ? 'Изпращане…' : 'Запазете мястото си'"></span></button>
+            <!-- Label and row share one <div>, as each contact field does: as direct children of the
+               form they would also get its 14px flex gap on top of the label's own 7px margin. -->
+            <div>
+              <label for="vc-wait-email" class="vc-label">Имейл</label>
+              <div class="vc-form-row">
+                <input id="vc-wait-email" type="email" required placeholder="вашият имейл" x-model="waitEmail"
+                  @input="waitErr = ''" x-ref="waitEmailInput" :aria-invalid="waitErr ? 'true' : 'false'"
+                  aria-describedby="vc-wait-err" class="vc-input">
+                <button type="submit" :disabled="waitLoading" class="vc-form-btn vc-waitlist-btn"><span
+                    x-text="waitLoading ? 'Изпращане…' : 'Запазете мястото си'"></span></button>
+              </div>
             </div>
             <!-- Invisible hCaptcha — no visible box, submitWait() triggers it via hcaptcha.execute()
                and hCaptcha only shows a puzzle when it wants one. A widget is needed on *this* form
@@ -542,7 +548,7 @@
               <li class="vc-check-row"><i class="ti ti-check" aria-hidden="true"></i>Екип и права</li>
               <li class="vc-check-row vc-check-row--extra"><i class="ti ti-check" aria-hidden="true"></i>Безплатна миграция на данни</li>
             </ul>
-            <a href="#demo" class="vc-hero-primary-btn vc-pricing-cta">Заявете демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+            <a href="#demo" class="vc-hero-primary-btn vc-pricing-cta">Пробвайте демо<i class="ti ti-arrow-right" aria-hidden="true"></i></a>
           </div>
           <div class="vc-pricing-card vc-pricing-card--muted">
             <span class="vc-pricing-badge vc-pricing-badge--muted">Очаквайте скоро</span>
@@ -847,6 +853,10 @@
         <span>© <span x-text="new Date().getFullYear()">2026</span> VetCare</span>
         <span class="vc-footer-sep" aria-hidden="true">·</span>
         <a href="privacy.html" class="vc-footer-legal-link">Поверителност и бисквитки</a>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <a href="/legal#obshti-usloviya" class="vc-footer-legal-link">Общи условия</a>
+        <span class="vc-footer-sep" aria-hidden="true">·</span>
+        <a href="/legal" class="vc-footer-legal-link">Правна информация</a>
         <span class="vc-footer-sep" aria-hidden="true">·</span>
         <button type="button" @click="openConsent()" class="vc-footer-cookie-btn">Управление на бисквитките</button>
       </div>
