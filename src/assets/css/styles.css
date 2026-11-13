@@ -842,6 +842,9 @@ button { font-family: inherit; }
     gap: 52px;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   }
+  /* Where the left column is taller (from ~1087px), the form card grows to end level with it. */
+  .vc-contact-form-col { align-self: stretch; display: flex; flex-direction: column; }
+  .vc-contact-form-col > .vc-contact-form { flex: 1 0 auto; }
 }
 
 .vc-contact-form {
@@ -1403,7 +1406,8 @@ button { font-family: inherit; }
 .vc-waitlist-success i { font-size: 21px; color: var(--accent); }
 /* "Докато чакате, последвайте ни:" and the social cards under the success message (C). The cards and
    their grid are defined under Contact; here they are centred in the box. Phone spacing first, the
-   issue's desktop spacing from the same 600px where the cards go side by side. */
+   desktop spacing from 600px. The cards themselves go three in a row only once the box's inner width
+   reaches 578px, from a ~744px viewport (see the grid's comment under Contact). */
 .vc-waitlist-social { margin-top: 24px; }
 .vc-waitlist-social-text { margin: 0 0 12px; font-size: 14.5px; color: var(--color-tertiary); }
 .vc-waitlist-social .vc-social-cards { margin-inline: auto; }
@@ -1554,7 +1558,7 @@ button { font-family: inherit; }
 
 /* Social link cards, shared by Contacts (B) and the waitlist success (C). Built like the email card
    above (its border list, its icon square) and sharing its hover and press in Interaction states.
-   Each placement's wrapper is the query container for the two-column rule below. */
+   Each placement's wrapper is the query container for the three-in-a-row rule below. */
 .vc-contact-social,
 .vc-waitlist-social { container: vc-social / inline-size; }
 .vc-social-cards {
@@ -1566,17 +1570,22 @@ button { font-family: inherit; }
   grid-template-columns: minmax(0, 1fr);
   max-width: 420px;
 }
-/* Side by side only where both cards fit, and never below 600px (the .vc-form-row threshold the
-   issue names). "Fit" is measured on the wrapper, not the viewport: from 900px the contact grid goes
-   two columns and its left column is under 381px until a ~980-1000px viewport, the exact point moving
-   with the scrollbar's width. A viewport query would have to restate the section padding, the
-   0.9fr/1.1fr split and the 52px gap, and still guess the scrollbar. 381px = two cards at their
-   min-content plus the gap: 2 × (2 border + 28 padding + 40 icon + 12 + 74.5 for "Facebook" at
-   15px/600 Poppins + 12 + 16 arrow) + 12. Recompute it if the card's padding, gaps, icon or labels
-   change. */
+/* All three cards in one row where they fit, otherwise one per row: never two columns, which would
+   leave the third card alone on a second row. Never in a row below 600px either (the .vc-form-row
+   threshold), although both wrappers are narrower than 578px there anyway. "Fit" is measured on the
+   wrapper, not the viewport, because the two placements get there at different widths. The contact
+   column (B) spans the content width below 900px and is at most 427px from 900px, where the contact
+   grid goes two columns, so its cards are in a row from a ~659px viewport to 899px. The waitlist box
+   (C) holds a row from a ~744px viewport up. Both points are for a 15px scrollbar (~643px and ~725px
+   with overlay scrollbars). A viewport query would have to restate both sections' padding, the
+   0.9fr/1.1fr split and the 52px gap, and still guess the scrollbar. 578px = three cards at their
+   min-content plus two gaps: 3 × (2 border + 28 padding + 40 icon + 12 + 74.5 for "Facebook", the
+   widest label at 15px/600 Poppins (YouTube 67.0, LinkedIn 63.3), + 12 + 16 arrow) + 2 × 12. In the
+   row the list grows to at most 640px, so a card stays about as wide as one of the two side-by-side
+   cards used to be (~205px). Recompute 578px if the card's padding, gaps, icon or labels change. */
 @media (min-width: 600px) {
-  @container vc-social (min-width: 381px) {
-    .vc-social-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @container vc-social (min-width: 578px) {
+    .vc-social-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 640px; }
   }
 }
 .vc-social-card {
