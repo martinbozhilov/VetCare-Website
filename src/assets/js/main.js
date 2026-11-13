@@ -177,8 +177,11 @@ window.vcCaptchaReady = function vcCaptchaReady() {
     const opts = { ...baseOpts };
     // The checkbox is a fixed 303px iframe that the CSS scales to 0.92 (279px) on phones. A
     // container narrower than that would clip hCaptcha's logo and privacy/terms links, so fall back
-    // to its 164x144 compact widget instead of shrinking further (the links must stay legible).
-    if (name === 'contact' && el.clientWidth < 279) {
+    // to its compact widget instead of shrinking further (the links must stay legible). styles.css
+    // reserves the compact height with `@container vc-contact-form (width < 279px)`, so this test
+    // must stay the same: the fractional width, as the container query sees it, not clientWidth,
+    // which rounds and would disagree with it in the last half pixel.
+    if (name === 'contact' && el.getBoundingClientRect().width < 279) {
       opts.size = 'compact';
       el.classList.add('vc-captcha--compact');
     }
