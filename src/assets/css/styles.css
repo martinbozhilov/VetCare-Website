@@ -2228,22 +2228,28 @@ button { font-family: inherit; }
   text-wrap: pretty;
 }
 .vc-article-meta { font-size: 14.5px; color: var(--color-tertiary); margin: 0; }
-/* Tags: plain labels in a row under the date, in its size and colour. They are not links (there are
-   no tag pages yet), so they get no hover or focus state. Each tag is one flex item, so the row wraps
-   between tags and a multi-word tag stays whole; it only wraps at its own spaces if it is wider than
-   the column by itself, rather than overflowing. The "·" closes each tag but the last, so a wrapped
-   row ends with a dot instead of starting with one (the rule glueDash() applies to " - "). */
+/* Tags: quiet chips in a row under the date, in the muted pricing badge's colours
+   (.vc-pricing-badge--muted). They are not links (there are no tag pages yet), so they stay flat: no
+   border, no shadow, no hover or focus state and the default cursor, so nothing promises a click.
+   Each tag is one flex item, so the row wraps between chips and a multi-word tag stays whole; it only
+   wraps at its own spaces if it is wider than the column by itself, rather than overflowing. */
 .vc-article-tags {
   list-style: none;
-  margin: 4px 0 0;
+  margin: 12px 0 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0 .35em;
-  font-size: 14.5px;
+  gap: 8px;
+}
+.vc-article-tag {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--color-mist);
   color: var(--color-tertiary);
 }
-.vc-article-tags-sep { margin-left: .35em; }
 .vc-article-cover {
   margin-top: clamp(28px, 4vw, 44px);
   margin-bottom: clamp(32px, 4.5vw, 52px);
