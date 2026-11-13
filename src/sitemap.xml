@@ -19,7 +19,15 @@
   </url>
   <url>
     <loc>https://vetcare.bg/blog</loc>
-    <lastmod>2026-11-10</lastmod>
+    <lastmod>2026-12-01</lastmod>
+  </url>
+  <url>
+    <loc>https://vetcare.bg/blog/sklad-v-klinikata</loc>
+    <lastmod>2026-12-01</lastmod>
+    <image:image>
+      <image:loc>https://vetcare.bg/blog/images/sklad-v-klinikata.jpg?v=d9eafe657d</image:loc>
+      <image:title>Разхвърляни сиви кутии с лекарства и подреден шкаф с цветни кутии до малък хладилник с флакони</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://vetcare.bg/blog/smyana-na-softuer</loc>
